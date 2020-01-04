@@ -29,7 +29,7 @@ function vecMix(X: Array<float>, Xbegin: int, Xend: int, Y: Array<float>, Ybegin
   //let R = new Array<float>(len);
   // let i = Xbegin, j = Ybegin, k = 0;
   // while (k < len) {
-  //   if (i < Xend && j < Yend) {
+  //   if (i < Xend   && j < Yend) {
   //     R[k++] = (X[i] > Y[j]) ? X[i++] : Y[j++];
   //   } else {
   //     R[k++] = (i < Xend) ? X[i++] : Y[j++];
@@ -43,7 +43,7 @@ function vecMix(X: Array<float>, Xbegin: int, Xend: int, Y: Array<float>, Ybegin
 function vecSum(X: Array<float>): Array<float> {
   let E = new Array<float>(X.length);
   let s = X[X.length - 1];
-  for(let i = X.length - 2; i >= 0; i--) {
+  for (let i = X.length - 2; i >= 0; i--) {
     s = twoSum(X[i], s);
     E[i + 1] = LO;
   }
@@ -53,25 +53,34 @@ function vecSum(X: Array<float>): Array<float> {
 
 // Algorithm 7 from [1]
 // need quickSum optimization
-function vecSumErrBranch(E: Array<float>, m: int): Array<float> {
+function vecSumErrBranch(E: Array<float>, outSize: int): Array<float> {
   let F = new Array<float>(E.length);
   let e = E[0], j = 0;
-  for(let i = 0; i <= E.length - 2; i++) {
+  for (let i = 0; i <= E.length - 2; i++) {
     F[j] = twoSum(e, E[i+1]);
     e = LO;
     if (e != 0.) {
-      if (j++ >= m - 1) return F;
+      if (j++ >= outSize - 1) return F;
     } else {
       e = F[j];
     }
   }
-  if (e != 0. && j < m) F[j] = e;
+  if (e != 0. && j < outSize) F[j] = e;
   return F;
 }
 
-// Algorithm 6 from [1]
+function VecSumErr(E: Array<float>, begin: int, end: int): Array<float> {
+  return E;
+}
+
+// Algorithm 6 with inlined Algorithm 8 from [1]
+// need revision
 function renormalize(X: Array<float>, outSize: int): Array<float> {
-  return Array<float>(1);
+  let F = vecSumErrBranch(vecSum(X), outSize + 1);
+  for (let i = 0; i <= outSize - 2; i++) {
+    F = VecSumErr(F, i, outSize);
+  }
+  return F;
 }
 
 // Algorithm 5 from [1]
@@ -85,8 +94,8 @@ export function mul(X: Array<float>, Y: Array<float>): Array<float> {
   let E2 = new Array<float>(n + 1);
   R[0] = twoProd(X[0], Y[0]);
   E[0] = LO;
-  for(let j = 1; j < n; j++) {
-    for(let i = 0; i <= j; i++) {
+  for (let j = 1; j < n; j++) {
+    for (let i = 0; i <= j; i++) {
       P[i] = twoProd(X[i], Y[j - i]);
       E2[i] = LO;
     }
@@ -94,8 +103,8 @@ export function mul(X: Array<float>, Y: Array<float>): Array<float> {
     R[j] = S[0];
     E = vecMix(E, 1, j*j + j + 1, E2, 0, j + 1);
   }
-  for(let i = 1; i < n; i++) R[n] += X[i] * Y[n - i];
-  for(let i = 1; i < n * n; i++) R[n] += E[i];
+  for (let i = 1; i < n; i++) R[n] += X[i] * Y[n - i];
+  for (let i = 1; i < n * n; i++) R[n] += E[i];
   return renormalize(R, n);
 }
 

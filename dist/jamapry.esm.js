@@ -28,8 +28,33 @@ function vecSum(X) {
     E[0] = s;
     return E;
 }
+function vecSumErrBranch(E, outSize) {
+    let F = new Array(E.length);
+    let e = E[0], j = 0;
+    for (let i = 0; i <= E.length - 2; i++) {
+        F[j] = twoSum(e, E[i + 1]);
+        e = LO;
+        if (e != 0.) {
+            if (j++ >= outSize - 1)
+                return F;
+        }
+        else {
+            e = F[j];
+        }
+    }
+    if (e != 0. && j < outSize)
+        F[j] = e;
+    return F;
+}
+function VecSumErr(E, begin, end) {
+    return E;
+}
 function renormalize(X, outSize) {
-    return Array(1);
+    let F = vecSumErrBranch(vecSum(X), outSize + 1);
+    for (let i = 0; i <= outSize - 2; i++) {
+        F = VecSumErr(F);
+    }
+    return F;
 }
 function mul(X, Y) {
     let n = X.length;
@@ -53,7 +78,7 @@ function mul(X, Y) {
         R[n] += X[i] * Y[n - i];
     for (let i = 1; i < n * n; i++)
         R[n] += E[i];
-    return renormalize();
+    return renormalize(R, n);
 }
 
 export { mul };

@@ -1,14 +1,15 @@
-# jampary (JAvascript Multiple Precision Arithmetic libraRY)
+# jampary
+
+##### (JAvascript Multiple Precision Arithmetic libraRY)
 
 Modern arbitrary-precision arithmetic library using floating-point expansions.
 
-## 2do
+### 2do
 - [ ] mvp
 - [ ] quick test
 - [ ] optimization
 
-## References
-
+### References
 1. Mioara Joldes, Olivier Marty, Jean-Michel Muller, Valentina Popescu
   *Arithmetic algorithms for extended precision using floating-point expansions*,
   2015 [[PDF](https://hal.archives-ouvertes.fr/hal-01111551v2/document)].
