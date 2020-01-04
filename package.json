@@ -1,0 +1,31 @@
+{
+  "name": "jampary",
+  "version": "0.0.2",
+  "description": "Modern arbitrary-precision arithmetic library using floating-point expansions.",
+  "main": "dist/jampary.js",
+  "module": "dist/jamapry.esm.js",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -cw",
+    "test": "node ./test/test.js"
+  },
+  "devDependencies": {
+    "rollup": "^1.27.14",
+    "rollup-plugin-typescript2": "^0.25.3",
+    "typescript": "^3.7.4"
+  },
+  "keywords": [
+    "campary",
+    "mpfr",
+    "gmp",
+    "qd",
+    "double-double",
+    "bigfloat",
+    "bigdecimal",
+    "bignumber.js",
+    "decimal.js",
+    "big.js"
+  ],
+  "author": "munrocket",
+  "license": "MIT"
+}
