@@ -73,6 +73,15 @@ function renormalize(X, outSize) {
     }
     return F;
 }
+function add(X, Y) {
+    return renormalize(vecMix(X, 0, X.length, Y, 0, Y.length), Math.max(X.length, Y.length));
+}
+function sub(X, Y) {
+    let size = Math.max(X.length, Y.length);
+    for (let i = 0; i < Y.length; i++)
+        Y[i] = -Y[i];
+    return renormalize(vecMix(X, 0, X.length, Y, 0, Y.length), Math.max(X.length, Y.length));
+}
 function mul(X, Y) {
     let n = X.length;
     let R = new Array(n + 1);
@@ -98,4 +107,4 @@ function mul(X, Y) {
     return renormalize(R, n);
 }
 
-export { mul };
+export { add, mul, sub };

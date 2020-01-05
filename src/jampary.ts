@@ -97,6 +97,20 @@ function renormalize(X: Array<float>, outSize: int): Array<float> {
   return F;
 }
 
+/* === Arbitrary-precision operations === */
+
+// Algorithm 4 from [1]
+export function add(X: Array<float>, Y: Array<float>): Array<float> {
+  return renormalize(vecMix(X, 0, X.length, Y, 0, Y.length), Math.max(X.length, Y.length));
+}
+
+// Negated Algorithm 4 from [1]
+export function sub(X: Array<float>, Y: Array<float>): Array<float> {
+  let size = Math.max(X.length, Y.length);
+  for (let i = 0; i < Y.length; i++) Y[i] = -Y[i];
+  return renormalize(vecMix(X, 0, X.length, Y, 0, Y.length), Math.max(X.length, Y.length));
+}
+
 // Algorithm 5 from [1]
 // 2do: memory optimization
 export function mul(X: Array<float>, Y: Array<float>): Array<float> {
