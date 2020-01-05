@@ -1,6 +1,4 @@
-# jampary
-
-##### (JAvascript Multiple Precision Arithmetic libraRY)
+## JAMPARY: JAvascript Multiple Precision Arithmetic libraRY
 
 Modern arbitrary-precision arithmetic library using floating-point expansions.
 

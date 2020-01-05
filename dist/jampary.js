@@ -22,7 +22,18 @@
       return t;
   }
   function vecMix(X, Xbegin, Xend, Y, Ybegin, Yend) {
-      return X.concat(Y);
+      let len = Xend - Xbegin + Yend - Ybegin;
+      let R = new Array(len);
+      let i = Xbegin, j = Ybegin, k = 0;
+      while (k < len) {
+          if (i < Xend && j < Yend) {
+              R[k++] = (X[i] > Y[j]) ? X[i++] : Y[j++];
+          }
+          else {
+              R[k++] = (i < Xend) ? X[i++] : Y[j++];
+          }
+      }
+      return R;
   }
   function vecSum(X) {
       let E = new Array(X.length);
@@ -52,13 +63,19 @@
           F[j] = e;
       return F;
   }
-  function VecSumErr(E, begin, end) {
-      return E;
+  function vecSumErr(F, begin, end) {
+      let p = F[begin];
+      for (let i = begin; i < end - 1; i++) {
+          F[i] = twoSum(p, F[i + 1]);
+          p = LO;
+      }
+      F[end - 1] = p;
+      return F;
   }
   function renormalize(X, outSize) {
       let F = vecSumErrBranch(vecSum(X), outSize + 1);
-      for (let i = 0; i <= outSize - 2; i++) {
-          F = VecSumErr(F);
+      for (let i = 0; i < outSize; i++) {
+          F = vecSumErr(F, i, outSize);
       }
       return F;
   }
@@ -76,9 +93,9 @@
               P[i] = twoProd(X[i], Y[j - i]);
               E2[i] = LO;
           }
-          S = vecSum(vecMix(P, 0, j + 1, E));
+          S = vecSum(vecMix(P, 0, j + 1, E, 0, j * j));
           R[j] = S[0];
-          E = vecMix(E, 1, j * j + j + 1, E2);
+          E = vecMix(E, 1, j * j + j + 1, E2, 0, j + 1);
       }
       for (let i = 1; i < n; i++)
           R[n] += X[i] * Y[n - i];

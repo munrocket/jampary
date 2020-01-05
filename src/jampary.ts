@@ -3,6 +3,13 @@ type int = number;
 let LO: float;
 const splitter = 134217729.; // = 2^27+1 for 64-bit float
 
+// 2do: inline in all places
+function quickSum(a: float, b: float): float {
+  let s = a + b;
+  LO = b - (s - a);
+  return s;
+}
+
 // Algorithm 4.4 from [2]
 function twoSum(a: float, b: float): float {
   let s = a + b;
@@ -24,22 +31,21 @@ function twoProd(a: float, b: float): float {
 
 // Merge two descending sorted arrays of floats into one sorted array
 function vecMix(X: Array<float>, Xbegin: int, Xend: int, Y: Array<float>, Ybegin: int, Yend: int): Array<float> {
-  return X.concat(Y);
-  //let len = Xend - Xbegin + Yend - Ybegin;
-  //let R = new Array<float>(len);
-  // let i = Xbegin, j = Ybegin, k = 0;
-  // while (k < len) {
-  //   if (i < Xend   && j < Yend) {
-  //     R[k++] = (X[i] > Y[j]) ? X[i++] : Y[j++];
-  //   } else {
-  //     R[k++] = (i < Xend) ? X[i++] : Y[j++];
-  //   }
-  // }
-  //return R;
+  let len = Xend - Xbegin + Yend - Ybegin;
+  let R = new Array<float>(len);
+  let i = Xbegin, j = Ybegin, k = 0;
+  while (k < len) {
+    if (i < Xend   && j < Yend) {
+      R[k++] = (X[i] > Y[j]) ? X[i++] : Y[j++];
+    } else {
+      R[k++] = (i < Xend) ? X[i++] : Y[j++];
+    }
+  }
+  return R;
 }
 
 // Algorithm 3 from [1]
-// need quickSum optimization
+// 2do: quickSum optimization
 function vecSum(X: Array<float>): Array<float> {
   let E = new Array<float>(X.length);
   let s = X[X.length - 1];
@@ -52,7 +58,7 @@ function vecSum(X: Array<float>): Array<float> {
 }
 
 // Algorithm 7 from [1]
-// need quickSum optimization
+// 2do: quickSum optimization
 function vecSumErrBranch(E: Array<float>, outSize: int): Array<float> {
   let F = new Array<float>(E.length);
   let e = E[0], j = 0;
@@ -69,22 +75,30 @@ function vecSumErrBranch(E: Array<float>, outSize: int): Array<float> {
   return F;
 }
 
-function VecSumErr(E: Array<float>, begin: int, end: int): Array<float> {
-  return E;
+// Algorithm 8 
+// 2do: inline
+function vecSumErr(F: Array<float>, begin: int, end: int): Array<float> {
+  let p = F[begin];
+  for (let i = begin; i < end - 1; i++) {
+    F[i] = twoSum(p, F[i + 1]);
+    p = LO;
+  }
+  F[end - 1] = p;
+  return F;
 }
 
 // Algorithm 6 with inlined Algorithm 8 from [1]
-// need revision
+// 2do: revision
 function renormalize(X: Array<float>, outSize: int): Array<float> {
   let F = vecSumErrBranch(vecSum(X), outSize + 1);
-  for (let i = 0; i <= outSize - 2; i++) {
-    F = VecSumErr(F, i, outSize);
+  for (let i = 0; i < outSize; i++) {
+    F = vecSumErr(F, i, outSize);
   }
   return F;
 }
 
 // Algorithm 5 from [1]
-// need memory optimization
+// 2do: memory optimization
 export function mul(X: Array<float>, Y: Array<float>): Array<float> {
   let n = X.length;
   let R = new Array<float>(n + 1);
