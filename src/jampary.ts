@@ -34,7 +34,7 @@ function vecMerge(X: Array<float>, Xbegin: int, Xend: int,
                   Y: Array<float>, Ybegin: int, Yend: int): Array<float> {
   let k = 0, R = new Array<float>(Xend - Xbegin + Yend - Ybegin);
   for (let i = Xbegin; i < Xend; i++) R[k++] = X[i];
-  for (let j = Ybegin; j < Yend; j++) R[k++] = Y[j];
+  for (let i = Ybegin; i < Yend; i++) R[k++] = Y[i];
   return R;
 }
 
@@ -43,7 +43,7 @@ function vecMergeNeg(X: Array<float>, Xbegin: int, Xend: int,
                      Y: Array<float>, Ybegin: int, Yend: int): Array<float> {
   let k = 0, R = new Array<float>(Xend - Xbegin + Yend - Ybegin);
   for (let i = Xbegin; i < Xend; i++) R[k++] = X[i];
-  for (let j = Ybegin; j < Yend; j++) R[k++] = -Y[j];
+  for (let i = Ybegin; i < Yend; i++) R[k++] = -Y[i];
   return R;
 }
 
@@ -52,7 +52,7 @@ export function vecSum(X: Array<float>): Array<float> {
   let E = new Array<float>(X.length);
   let s = X[X.length - 1];
   for (let i = X.length - 2; i >= 0; i--) {
-    s = quickSum(X[i], s);
+    s = twoSum(X[i], s);
     E[i + 1] = LO;
   }
   E[0] = s;
@@ -64,7 +64,7 @@ function vecSumErrBranch(E: Array<float>, outSize: int): Array<float> {
   let F = new Array<float>(E.length);
   let e = E[0], j = 0;
   for (let i = 0; i <= E.length - 2; i++) {
-    F[j] = quickSum(e, E[i+1]);
+    F[j] = twoSum(e, E[i+1]);
     e = LO;
     if (e != 0.) {
       if (j++ >= outSize - 1) return F;
@@ -80,7 +80,7 @@ function vecSumErrBranch(E: Array<float>, outSize: int): Array<float> {
 function vecSumErr(F: Array<float>, begin: int, end: int): Array<float> {
   let p = F[begin];
   for (let i = begin; i < end - 1; i++) {
-    F[i] = quickSum(p, F[i + 1]);
+    F[i] = twoSum(p, F[i + 1]);
     p = LO;
   }
   F[end - 1] = p;
@@ -119,35 +119,47 @@ export function sub(X: Array<float>, Y: Array<float>): Array<float> {
 // }
 
 // Algorithm 5
-// 2do: get rid of P
+// 2do: revisit memory
 export function mul(X: Array<float>, Y: Array<float>): Array<float> {
-  let n = Math.max(X.length, Y.length);
-  let R = new Array<float>(n);
-  let P = new Array<float>(n);
-  let S = new Array<float>(n * n);
-  let E = new Array<float>(n * n);
-  let E2 = new Array<float>(n);
+  let n = X.length, m = Y.length, d = Math.max(n, m);
+  let R = new Array<float>(d);
+  let P = new Array<float>(d);
+  let S: Array<float>;
+  let E = new Array<float>(d * d);
+  let E2 = new Array<float>(d);
+  for (let i = n; i < d; i++) X[i] = 0;
+  for (let i = m; i < d; i++) Y[i] = 0;
   R[0] = twoProd(X[0], Y[0]);
+  R[d] = 0;
   E[0] = LO;
-  for (let j = 1; j < n; j++) {
+  for (let j = 1; j < d; j++) {
     for (let i = 0; i <= j; i++) {
       P[i] = twoProd(X[i], Y[j - i]);
       E2[i] = LO;
     }
-    S = vecSum(vecMerge(P, 0, j + 1, E, 0, j*j));
+    S = vecSum(vecMerge(P, 0, j+1, E, 0, j*j));
     R[j] = S[0];
-    E = vecMerge(S, 1, j*j + j + 1, E2, 0, j + 1);
+    E = vecMerge(S, 1, j*j + j + 1, E2, 0, j+1);
   }
-  R[n] = 0;
-  for (let i = 1; i < n; i++) R[n] += X[i] * Y[n - i];
-  for (let i = 0; i < n * n; i++) R[n] += E[i];
-  return renormalize(R, n);
+  for (let i = 1; i < d; i++) R[d] += X[i] * Y[d - i];
+  for (let i = 0; i < d * d; i++) R[d] += E[i];
+  return renormalize(R, d);
 }
 
 // Algorithm 
 export function div(X: Array<float>, Y: Array<float>): Array<float> {
-  let n = Math.max(X.length, Y.length);
-  let q = X[0] / Y[0];
-  let R = new Array<float>(n);
-  return R;
+  let n = X.length, m = Y.length, d = Math.max(n, m);
+  let F: Array<float>;
+  let R = new Array<float>(d);
+  let Q = new Array<float>(d);
+  for (let i = 0; i < n; i++) R[i] = X[i];
+  for (let i = n; i < d; i++) R[i] = 0;
+  Q[0] = X[0] / Y[0];
+  for (let i = 1; i < d; i++) {
+    F = mul([Q[i - 1]], Y);
+    return F;
+    R = renormalize(sub(R, F), d);
+    Q[i] = R[0] / Y[0];
+  }
+  return Q;
 }
