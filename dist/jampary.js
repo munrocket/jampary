@@ -6,10 +6,9 @@
 
   let LO;
   const splitter = 134217729.;
-  function twoSum(a, b) {
+  function quickSum(a, b) {
       let s = a + b;
-      let a1 = s - b;
-      LO = (a - a1) + (b - (s - a1));
+      LO = b - (s - a);
       return s;
   }
   function twoProd(a, b) {
@@ -21,16 +20,30 @@
       LO = (((ah * bh - t) + ah * bl) + al * bh) + al * bl;
       return t;
   }
-  function vecMix(X, Xbegin, Xend, Y, Ybegin, Yend) {
+  function vecMerge(X, Xbegin, Xend, Y, Ybegin, Yend) {
       let len = Xend - Xbegin + Yend - Ybegin;
       let R = new Array(len);
       let i = Xbegin, j = Ybegin, k = 0;
       while (k < len) {
           if (i < Xend && j < Yend) {
-              R[k++] = (X[i] > Y[j]) ? X[i++] : Y[j++];
+              R[k++] = (Math.abs(X[i]) > Math.abs(Y[j])) ? X[i++] : Y[j++];
           }
           else {
               R[k++] = (i < Xend) ? X[i++] : Y[j++];
+          }
+      }
+      return R;
+  }
+  function vecMergeNeg(X, Xbegin, Xend, Y, Ybegin, Yend) {
+      let len = Xend - Xbegin + Yend - Ybegin;
+      let R = new Array(len);
+      let i = Xbegin, j = Ybegin, k = 0;
+      while (k < len) {
+          if (i < Xend && j < Yend) {
+              R[k++] = (Math.abs(X[i]) > Math.abs(Y[j])) ? X[i++] : -Y[j++];
+          }
+          else {
+              R[k++] = (i < Xend) ? X[i++] : -Y[j++];
           }
       }
       return R;
@@ -39,7 +52,7 @@
       let E = new Array(X.length);
       let s = X[X.length - 1];
       for (let i = X.length - 2; i >= 0; i--) {
-          s = twoSum(X[i], s);
+          s = quickSum(X[i], s);
           E[i + 1] = LO;
       }
       E[0] = s;
@@ -49,7 +62,7 @@
       let F = new Array(E.length);
       let e = E[0], j = 0;
       for (let i = 0; i <= E.length - 2; i++) {
-          F[j] = twoSum(e, E[i + 1]);
+          F[j] = quickSum(e, E[i + 1]);
           e = LO;
           if (e != 0.) {
               if (j++ >= outSize - 1)
@@ -66,7 +79,7 @@
   function vecSumErr(F, begin, end) {
       let p = F[begin];
       for (let i = begin; i < end - 1; i++) {
-          F[i] = twoSum(p, F[i + 1]);
+          F[i] = quickSum(p, F[i + 1]);
           p = LO;
       }
       F[end - 1] = p;
@@ -77,16 +90,14 @@
       for (let i = 0; i < outSize; i++) {
           F = vecSumErr(F, i, outSize);
       }
-      return F;
+      return F.slice(0, outSize);
   }
   function add(X, Y) {
-      return renormalize(vecMix(X, 0, X.length, Y, 0, Y.length), Math.max(X.length, Y.length));
+      return renormalize(vecMerge(X, 0, X.length, Y, 0, Y.length), Math.max(X.length, Y.length));
   }
   function sub(X, Y) {
       let size = Math.max(X.length, Y.length);
-      for (let i = 0; i < Y.length; i++)
-          Y[i] = -Y[i];
-      return renormalize(vecMix(X, 0, X.length, Y, 0, Y.length), Math.max(X.length, Y.length));
+      return renormalize(vecMergeNeg(X, 0, X.length, Y, 0, Y.length), Math.max(X.length, Y.length));
   }
   function mul(X, Y) {
       let n = X.length;
@@ -102,9 +113,9 @@
               P[i] = twoProd(X[i], Y[j - i]);
               E2[i] = LO;
           }
-          S = vecSum(vecMix(P, 0, j + 1, E, 0, j * j));
+          S = vecSum(vecMerge(P, 0, j + 1, E, 0, j * j));
           R[j] = S[0];
-          E = vecMix(E, 1, j * j + j + 1, E2, 0, j + 1);
+          E = vecMerge(E, 1, j * j + j + 1, E2, 0, j + 1);
       }
       for (let i = 1; i < n; i++)
           R[n] += X[i] * Y[n - i];
@@ -112,8 +123,12 @@
           R[n] += E[i];
       return renormalize(R, n);
   }
+  function div(X, Y) {
+      return X;
+  }
 
   exports.add = add;
+  exports.div = div;
   exports.mul = mul;
   exports.sub = sub;
 

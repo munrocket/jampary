@@ -4,10 +4,11 @@
   "description": "Modern arbitrary-precision arithmetic library using floating-point expansions.",
   "main": "dist/jampary.js",
   "module": "dist/jamapry.esm.js",
+  "type": "module",
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -cw",
-    "test": "node ./test/test.js"
+    "test": "node --experimental-modules --no-warnings ./test/test.js"
   },
   "devDependencies": {
     "rollup": "^1.27.14",
