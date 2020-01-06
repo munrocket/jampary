@@ -10,7 +10,7 @@ function quickSum(a: float, b: float): float {
   return s;
 }
 
-// Algorithm 4.4 from [2]
+// Algorithm 3.1 from [2]
 function twoSum(a: float, b: float): float {
   let s = a + b;
   let a1  = s - b;
@@ -18,49 +18,37 @@ function twoSum(a: float, b: float): float {
   return s;
 }
 
-// Algorithm 4.7 with inlined 4.6 from [2]
+// Algorithm 3.3 with inlined 4.6 from [2]
 function twoProd(a: float, b: float): float {
   let t = splitter * a;
   let ah = t + (a - t), al = a - ah;
   t = splitter * b;
   let bh = t + (b - t), bl = b - bh;
   t = a * b;
-  LO = (((ah * bh - t) + ah * bl) + al * bh) + al * bl;
+  LO = ((ah * bh - t) + ah * bl + al * bh) + al * bl;
   return t;
 }
 
 // Merge two descending sorted arrays of floats into one sorted array
-function vecMerge(X: Array<float>, Xbegin: int, Xend: int, Y: Array<float>, Ybegin: int, Yend: int): Array<float> {
-  let len = Xend - Xbegin + Yend - Ybegin;
-  let R = new Array<float>(len);
-  let i = Xbegin, j = Ybegin, k = 0;
-  while (k < len) {
-    if (i < Xend   && j < Yend) {
-      R[k++] = (Math.abs(X[i]) > Math.abs(Y[j])) ? X[i++] : Y[j++];
-    } else {
-      R[k++] = (i < Xend) ? X[i++] : Y[j++];
-    }
-  }
+function vecMerge(X: Array<float>, Xbegin: int, Xend: int,
+                  Y: Array<float>, Ybegin: int, Yend: int): Array<float> {
+  let k = 0, R = new Array<float>(Xend - Xbegin + Yend - Ybegin);
+  for (let i = Xbegin; i < Xend; i++) R[k++] = X[i];
+  for (let j = Ybegin; j < Yend; j++) R[k++] = Y[j];
   return R;
 }
 
-// Merge and negate Y
-function vecMergeNeg(X: Array<float>, Xbegin: int, Xend: int, Y: Array<float>, Ybegin: int, Yend: int): Array<float> {
-  let len = Xend - Xbegin + Yend - Ybegin;
-  let R = new Array<float>(len);
-  let i = Xbegin, j = Ybegin, k = 0;
-  while (k < len) {
-    if (i < Xend   && j < Yend) {
-      R[k++] = (Math.abs(X[i]) > Math.abs(Y[j])) ? X[i++] : -Y[j++];
-    } else {
-      R[k++] = (i < Xend) ? X[i++] : -Y[j++];
-    }
-  }
+// Previous merge with negated Y
+function vecMergeNeg(X: Array<float>, Xbegin: int, Xend: int,
+                     Y: Array<float>, Ybegin: int, Yend: int): Array<float> {
+  let k = 0, R = new Array<float>(Xend - Xbegin + Yend - Ybegin);
+  for (let i = Xbegin; i < Xend; i++) R[k++] = X[i];
+  for (let j = Ybegin; j < Yend; j++) R[k++] = -Y[j];
   return R;
 }
 
-// Algorithm 3 from [1]
-function vecSum(X: Array<float>): Array<float> {
+// Algorithm 3
+export function vecSum(X: Array<float>): Array<float> {
   let E = new Array<float>(X.length);
   let s = X[X.length - 1];
   for (let i = X.length - 2; i >= 0; i--) {
@@ -71,7 +59,7 @@ function vecSum(X: Array<float>): Array<float> {
   return E;
 }
 
-// Algorithm 7 from [1]
+// Algorithm 7
 function vecSumErrBranch(E: Array<float>, outSize: int): Array<float> {
   let F = new Array<float>(E.length);
   let e = E[0], j = 0;
@@ -99,37 +87,46 @@ function vecSumErr(F: Array<float>, begin: int, end: int): Array<float> {
   return F;
 }
 
-// Algorithm 6 with inlined Algorithm 8 from [1]
+// Algorithm 6 with inlined Algorithm 8
 function renormalize(X: Array<float>, outSize: int): Array<float> {
   let F = vecSumErrBranch(vecSum(X), outSize + 1);
   for (let i = 0; i < outSize; i++) {
     F = vecSumErr(F, i, outSize);
   }
-  return F.slice(0, outSize);
+  return (X.length == outSize) ? F : F.slice(0, outSize);
 }
 
 /* === Arbitrary-precision operations === */
 
-// Algorithm 4 from [1]
+// Algorithm 4
 export function add(X: Array<float>, Y: Array<float>): Array<float> {
-  return renormalize(vecMerge(X, 0, X.length, Y, 0, Y.length), Math.max(X.length, Y.length));
+  let n = Math.max(X.length, Y.length);
+  return renormalize(vecMerge(X, 0, X.length, Y, 0, Y.length), n);
 }
+// export function addFull(X: Array<float>, Y: Array<float>): Array<float> {
+//   let n = X.length + Y.length;
+//   return renormalize(vecMerge(X, 0, X.length, Y, 0, Y.length), n);
+// }
 
-// Negated Algorithm 4 from [1]
+// Negated Algorithm 4
 export function sub(X: Array<float>, Y: Array<float>): Array<float> {
-  let size = Math.max(X.length, Y.length);
-  return renormalize(vecMergeNeg(X, 0, X.length, Y, 0, Y.length), Math.max(X.length, Y.length));
+  let n = Math.max(X.length, Y.length);
+  return renormalize(vecMergeNeg(X, 0, X.length, Y, 0, Y.length), n);
 }
+// export function subFull(X: Array<float>, Y: Array<float>): Array<float> {
+//   let n = X.length + Y.length;
+//   return renormalize(vecMergeNeg(X, 0, X.length, Y, 0, Y.length), n);
+// }
 
-// Algorithm 5 from [1]
-// 2do: memory optimization
+// Algorithm 5
+// 2do: get rid of P
 export function mul(X: Array<float>, Y: Array<float>): Array<float> {
-  let n = X.length;
-  let R = new Array<float>(n + 1);
-  let P = new Array<float>(n + 1);
-  let S = new Array<float>(n + 1);
+  let n = Math.max(X.length, Y.length);
+  let R = new Array<float>(n);
+  let P = new Array<float>(n);
+  let S = new Array<float>(n * n);
   let E = new Array<float>(n * n);
-  let E2 = new Array<float>(n + 1);
+  let E2 = new Array<float>(n);
   R[0] = twoProd(X[0], Y[0]);
   E[0] = LO;
   for (let j = 1; j < n; j++) {
@@ -139,14 +136,18 @@ export function mul(X: Array<float>, Y: Array<float>): Array<float> {
     }
     S = vecSum(vecMerge(P, 0, j + 1, E, 0, j*j));
     R[j] = S[0];
-    E = vecMerge(E, 1, j*j + j + 1, E2, 0, j + 1);
+    E = vecMerge(S, 1, j*j + j + 1, E2, 0, j + 1);
   }
+  R[n] = 0;
   for (let i = 1; i < n; i++) R[n] += X[i] * Y[n - i];
-  for (let i = 1; i < n * n; i++) R[n] += E[i];
+  for (let i = 0; i < n * n; i++) R[n] += E[i];
   return renormalize(R, n);
 }
 
 // Algorithm 
 export function div(X: Array<float>, Y: Array<float>): Array<float> {
-  return X;
+  let n = Math.max(X.length, Y.length);
+  let q = X[0] / Y[0];
+  let R = new Array<float>(n);
+  return R;
 }
