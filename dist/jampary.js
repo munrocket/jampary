@@ -154,7 +154,6 @@
   exports.mul = mul;
   exports.sub = sub;
   exports.vecSum = vecSum;
-  exports.vecSumErrBranch = vecSumErrBranch;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

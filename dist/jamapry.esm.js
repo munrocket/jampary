@@ -143,4 +143,4 @@ function div(X, Y) {
     return renormalize(Q, d);
 }
 
-export { add, div, mul, sub, vecSum, vecSumErrBranch };
+export { add, div, mul, sub, vecSum };

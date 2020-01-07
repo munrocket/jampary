@@ -72,7 +72,7 @@ export function vecSum(X: Array<float>): Array<float> {
 }
 
 // Algorithm 7
-export function vecSumErrBranch(E: Array<float>, outSize: int): Array<float> {
+function vecSumErrBranch(E: Array<float>, outSize: int): Array<float> {
   let F = new Array<float>(E.length);
   let e = E[0], j = 0;
   for (let i = 0; i <= E.length - 2; i++) {
@@ -152,7 +152,7 @@ export function mul(X: Array<float>, Y: Array<float>): Array<float> {
   return renormalize(R, d);
 }
 
-// Algorithm 
+// Algorithm 10
 export function div(X: Array<float>, Y: Array<float>): Array<float> {
   let n = X.length, m = Y.length, d = Math.max(n, m);
   let F: Array<float>;
@@ -168,3 +168,5 @@ export function div(X: Array<float>, Y: Array<float>): Array<float> {
   }
   return renormalize(Q, d);
 }
+
+//export function sqrt(X: Array<float>): Array<float> {  }
