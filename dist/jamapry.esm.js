@@ -1,9 +1,8 @@
 let LO;
 const splitter = 134217729.;
-function twoSum(a, b) {
+function quickSum(a, b) {
     let s = a + b;
-    let a1 = s - b;
-    LO = (a - a1) + (b - (s - a1));
+    LO = b - (s - a);
     return s;
 }
 function twoProd(a, b) {
@@ -16,26 +15,38 @@ function twoProd(a, b) {
     return t;
 }
 function vecMerge(X, Xbegin, Xend, Y, Ybegin, Yend) {
-    let k = 0, R = new Array(Xend - Xbegin + Yend - Ybegin);
-    for (let i = Xbegin; i < Xend; i++)
-        R[k++] = X[i];
-    for (let i = Ybegin; i < Yend; i++)
-        R[k++] = Y[i];
+    let len = Xend - Xbegin + Yend - Ybegin;
+    let R = new Array(len);
+    let i = Xbegin, j = Ybegin, k = 0;
+    while (k < len) {
+        if (i < Xend && j < Yend) {
+            R[k++] = (Math.abs(X[i]) > Math.abs(Y[j])) ? X[i++] : Y[j++];
+        }
+        else {
+            R[k++] = (i < Xend) ? X[i++] : Y[j++];
+        }
+    }
     return R;
 }
 function vecMergeNeg(X, Xbegin, Xend, Y, Ybegin, Yend) {
-    let k = 0, R = new Array(Xend - Xbegin + Yend - Ybegin);
-    for (let i = Xbegin; i < Xend; i++)
-        R[k++] = X[i];
-    for (let i = Ybegin; i < Yend; i++)
-        R[k++] = -Y[i];
+    let len = Xend - Xbegin + Yend - Ybegin;
+    let R = new Array(len);
+    let i = Xbegin, j = Ybegin, k = 0;
+    while (k < len) {
+        if (i < Xend && j < Yend) {
+            R[k++] = (Math.abs(X[i]) > Math.abs(Y[j])) ? X[i++] : -Y[j++];
+        }
+        else {
+            R[k++] = (i < Xend) ? X[i++] : -Y[j++];
+        }
+    }
     return R;
 }
 function vecSum(X) {
     let E = new Array(X.length);
     let s = X[X.length - 1];
     for (let i = X.length - 2; i >= 0; i--) {
-        s = twoSum(X[i], s);
+        s = quickSum(X[i], s);
         E[i + 1] = LO;
     }
     E[0] = s;
@@ -45,7 +56,7 @@ function vecSumErrBranch(E, outSize) {
     let F = new Array(E.length);
     let e = E[0], j = 0;
     for (let i = 0; i <= E.length - 2; i++) {
-        F[j] = twoSum(e, E[i + 1]);
+        F[j] = quickSum(e, E[i + 1]);
         e = LO;
         if (e != 0.) {
             if (j++ >= outSize - 1)
@@ -56,13 +67,15 @@ function vecSumErrBranch(E, outSize) {
         }
     }
     if (e != 0. && j < outSize)
-        F[j] = e;
+        F[j++] = e;
+    for (let i = j; i < outSize; i++)
+        F[i] = 0;
     return F;
 }
 function vecSumErr(F, begin, end) {
     let p = F[begin];
     for (let i = begin; i < end - 1; i++) {
-        F[i] = twoSum(p, F[i + 1]);
+        F[i] = quickSum(p, F[i + 1]);
         p = LO;
     }
     F[end - 1] = p;
@@ -73,7 +86,7 @@ function renormalize(X, outSize) {
     for (let i = 0; i < outSize; i++) {
         F = vecSumErr(F, i, outSize);
     }
-    return (X.length == outSize) ? F : F.slice(0, outSize);
+    return F.slice(0, outSize);
 }
 function add(X, Y) {
     let n = Math.max(X.length, Y.length);
@@ -124,9 +137,10 @@ function div(X, Y) {
     Q[0] = X[0] / Y[0];
     for (let i = 1; i < d; i++) {
         F = mul([Q[i - 1]], Y);
-        return F;
+        R = renormalize(sub(R, F), d);
+        Q[i] = R[0] / Y[0];
     }
-    return Q;
+    return renormalize(Q, d);
 }
 
-export { add, div, mul, sub, vecSum };
+export { add, div, mul, sub, vecSum, vecSumErrBranch };

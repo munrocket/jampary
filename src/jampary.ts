@@ -30,20 +30,32 @@ function twoProd(a: float, b: float): float {
 }
 
 // Merge two descending sorted arrays of floats into one sorted array
-function vecMerge(X: Array<float>, Xbegin: int, Xend: int,
-                  Y: Array<float>, Ybegin: int, Yend: int): Array<float> {
-  let k = 0, R = new Array<float>(Xend - Xbegin + Yend - Ybegin);
-  for (let i = Xbegin; i < Xend; i++) R[k++] = X[i];
-  for (let i = Ybegin; i < Yend; i++) R[k++] = Y[i];
+function vecMerge(X: Array<float>, Xbegin: int, Xend: int, Y: Array<float>, Ybegin: int, Yend: int): Array<float> {
+  let len = Xend - Xbegin + Yend - Ybegin;
+  let R = new Array<float>(len);
+  let i = Xbegin, j = Ybegin, k = 0;
+  while (k < len) {
+    if (i < Xend   && j < Yend) {
+      R[k++] = (Math.abs(X[i]) > Math.abs(Y[j])) ? X[i++] : Y[j++];
+    } else {
+      R[k++] = (i < Xend) ? X[i++] : Y[j++];
+    }
+  }
   return R;
 }
 
-// Previous merge with negated Y
-function vecMergeNeg(X: Array<float>, Xbegin: int, Xend: int,
-                     Y: Array<float>, Ybegin: int, Yend: int): Array<float> {
-  let k = 0, R = new Array<float>(Xend - Xbegin + Yend - Ybegin);
-  for (let i = Xbegin; i < Xend; i++) R[k++] = X[i];
-  for (let i = Ybegin; i < Yend; i++) R[k++] = -Y[i];
+// Merge and negate Y
+function vecMergeNeg(X: Array<float>, Xbegin: int, Xend: int, Y: Array<float>, Ybegin: int, Yend: int): Array<float> {
+  let len = Xend - Xbegin + Yend - Ybegin;
+  let R = new Array<float>(len);
+  let i = Xbegin, j = Ybegin, k = 0;
+  while (k < len) {
+    if (i < Xend   && j < Yend) {
+      R[k++] = (Math.abs(X[i]) > Math.abs(Y[j])) ? X[i++] : -Y[j++];
+    } else {
+      R[k++] = (i < Xend) ? X[i++] : -Y[j++];
+    }
+  }
   return R;
 }
 
@@ -52,7 +64,7 @@ export function vecSum(X: Array<float>): Array<float> {
   let E = new Array<float>(X.length);
   let s = X[X.length - 1];
   for (let i = X.length - 2; i >= 0; i--) {
-    s = twoSum(X[i], s);
+    s = quickSum(X[i], s);
     E[i + 1] = LO;
   }
   E[0] = s;
@@ -60,11 +72,11 @@ export function vecSum(X: Array<float>): Array<float> {
 }
 
 // Algorithm 7
-function vecSumErrBranch(E: Array<float>, outSize: int): Array<float> {
+export function vecSumErrBranch(E: Array<float>, outSize: int): Array<float> {
   let F = new Array<float>(E.length);
   let e = E[0], j = 0;
   for (let i = 0; i <= E.length - 2; i++) {
-    F[j] = twoSum(e, E[i+1]);
+    F[j] = quickSum(e, E[i + 1]);
     e = LO;
     if (e != 0.) {
       if (j++ >= outSize - 1) return F;
@@ -72,28 +84,30 @@ function vecSumErrBranch(E: Array<float>, outSize: int): Array<float> {
       e = F[j];
     }
   }
-  if (e != 0. && j < outSize) F[j] = e;
+  if (e != 0. && j < outSize) F[j++] = e;
+  for (let i = j; i < outSize; i++) F[i] = 0;
   return F;
 }
 
 // Algorithm 8
+// 2do: inline
 function vecSumErr(F: Array<float>, begin: int, end: int): Array<float> {
   let p = F[begin];
   for (let i = begin; i < end - 1; i++) {
-    F[i] = twoSum(p, F[i + 1]);
+    F[i] = quickSum(p, F[i + 1]);
     p = LO;
   }
   F[end - 1] = p;
   return F;
 }
 
-// Algorithm 6 with inlined Algorithm 8
+// Algorithm 6
 function renormalize(X: Array<float>, outSize: int): Array<float> {
-  let F = vecSumErrBranch(vecSum(X), outSize + 1);
+  let F = vecSumErrBranch(vecSum(X), outSize + 1);//why?
   for (let i = 0; i < outSize; i++) {
     F = vecSumErr(F, i, outSize);
   }
-  return (X.length == outSize) ? F : F.slice(0, outSize);
+  return F.slice(0, outSize);//why?
 }
 
 /* === Arbitrary-precision operations === */
@@ -103,20 +117,12 @@ export function add(X: Array<float>, Y: Array<float>): Array<float> {
   let n = Math.max(X.length, Y.length);
   return renormalize(vecMerge(X, 0, X.length, Y, 0, Y.length), n);
 }
-// export function addFull(X: Array<float>, Y: Array<float>): Array<float> {
-//   let n = X.length + Y.length;
-//   return renormalize(vecMerge(X, 0, X.length, Y, 0, Y.length), n);
-// }
 
 // Negated Algorithm 4
 export function sub(X: Array<float>, Y: Array<float>): Array<float> {
   let n = Math.max(X.length, Y.length);
   return renormalize(vecMergeNeg(X, 0, X.length, Y, 0, Y.length), n);
 }
-// export function subFull(X: Array<float>, Y: Array<float>): Array<float> {
-//   let n = X.length + Y.length;
-//   return renormalize(vecMergeNeg(X, 0, X.length, Y, 0, Y.length), n);
-// }
 
 // Algorithm 5
 // 2do: revisit memory
@@ -157,9 +163,8 @@ export function div(X: Array<float>, Y: Array<float>): Array<float> {
   Q[0] = X[0] / Y[0];
   for (let i = 1; i < d; i++) {
     F = mul([Q[i - 1]], Y);
-    return F;
     R = renormalize(sub(R, F), d);
     Q[i] = R[0] / Y[0];
   }
-  return Q;
+  return renormalize(Q, d);
 }

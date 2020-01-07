@@ -3,8 +3,7 @@
 Modern arbitrary-precision arithmetic library using floating-point expansions.
 
 ### 2do
-- [x] tested add/sub
-- [ ] mvp
+- [x] mvp
 - [ ] mandel test
 - [ ] optimization
 
