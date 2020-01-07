@@ -8,9 +8,11 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -cw",
+    "http": "http-server -c-1 -p 1234",
     "test": "node --experimental-modules --no-warnings ./test/test.js"
   },
   "devDependencies": {
+    "http-server": "^0.12.0",
     "rollup": "^1.27.14",
     "rollup-plugin-typescript2": "^0.25.3",
     "typescript": "^3.7.4",

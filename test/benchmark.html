@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Benchmark</title>
+  <link rel="icon" href="data:;base64,iVBORwOKGO=" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+</head>
+<body>
+  <h1>Precision test and benchmark</h1>
+  <div style="position: relative">
+    <canvas id="splitTest" width="200" height="100" style="position: absolute; padding-left: 120px;"></canvas>
+    <canvas id="barChart" width="400" height="200" style="position: absolute; padding-top: 110px"></canvas>
+    <div class="bench-popup" style="display: none; position: absolute; padding-left: 85px; padding-top: 147px;">
+      <div style="padding-top: 8px;"><canvas id="withJampary" width="15" height="10"></canvas></div>
+      <div style="padding-top: 8px;"><canvas id="withDecimalJs" width="15" height="10"></canvas></div>
+      <div style="padding-top: 8px;"><canvas id="withBigNumberJs" width="15" height="10"></canvas></div>
+      <div style="padding-top: 8px;"><canvas id="withBigJs" width="15" height="10"></canvas></div>
+      <div style="padding-top: 8px;"><canvas id="withBigFloat32" width="15" height="10"></canvas></div>
+    </div>
+  </div>
+  <p class="bench-popup" style="display: none; font-family: 'Open Sans', sans; padding-top: 323px">
+    Probably ChartJS visualization not working in Safari and mobile phones.<br/>
+    All libraries in benchmark spending 1500 milliseconds and setted to precision with 46 decimal digits.
+    To increase Big.js and BigNumber.js I used .round(31) and .dp(31) after each multiplication without rouding they become much slower.
+  </p>
+  <script src="/dist/jampary.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+  <script src="https://unpkg.com/double.js"></script>
+  <script src="https://unpkg.com/decimal.js"></script>
+  <script src="https://unpkg.com/bignumber.js"></script>
+  <script src="https://unpkg.com/big.js"></script>
+  <script src="https://unpkg.com/bigfloat"></script>
+  <script src="./benchmark.js"></script>
+</body>

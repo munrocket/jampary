@@ -2,9 +2,13 @@
 
 Modern arbitrary-precision arithmetic library using floating-point expansions.
 
+### Early stage results without FMA
+![](https://habrastorage.org/webt/dd/4u/ku/dd4ukummfiy1zxghmc-noyxh5cq.png)
+
 ### 2do
 - [x] mvp
-- [ ] mandel test
+- [x] mandel test
+- [ ] fix mul/div
 - [ ] optimization
 
 ### References

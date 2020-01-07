@@ -60,7 +60,7 @@ function vecMergeNeg(X: Array<float>, Xbegin: int, Xend: int, Y: Array<float>, Y
 }
 
 // Algorithm 3
-export function vecSum(X: Array<float>): Array<float> {
+function vecSum(X: Array<float>): Array<float> {
   let E = new Array<float>(X.length);
   let s = X[X.length - 1];
   for (let i = X.length - 2; i >= 0; i--) {

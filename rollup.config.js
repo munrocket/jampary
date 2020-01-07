@@ -22,7 +22,7 @@ export default [
   {
     input: 'src/jampary.ts',
     output: [
-      { file: pkg.main, name: 'Jampary', format: 'umd' },
+      { file: pkg.main, format: 'iife' },
       { file: pkg.module, name: 'Jampary', format: 'esm' },
     ],
     plugins: [ typescript({ tsconfigOverride: tsconfig }) ]
