@@ -1,6 +1,7 @@
 type float = number;//f64;
 type int = number;//i32;
 let max = Math.max;
+let math_sqrt = Math.sqrt;
 
 type Vec = Array<float>;
 const splitter = 134217729.; // = 2^27+1 for 64-bit float
@@ -8,7 +9,7 @@ let EE: float; // global variable for storing temp error
 
 /* === Basic EFT bricks === */
 
-// 2do: inline in all places (works if |a| > |b|)
+// 2do: inline
 function quickSum(a: float, b: float): float {
   let s = a + b;
   EE = b - (s - a);
@@ -37,6 +38,7 @@ function twoProd(a: float, b: float): float {
 /* === Vectorized helpers === */
 
 // Merge two descending sorted arrays of floats into one sorted array
+// opt hypo: simple merge with twoSum
 function vecMerge(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
   let len = Ar - Al + Br - Bl;
   let R = new Array<float>(len);
@@ -97,7 +99,7 @@ function vecSumErrBranch(E: Vec, outSize: int): Vec {
 }
 
 // Algorithm 8
-// 2do: inline
+// 2do in release: inline
 function vecSumErr(F: Vec, begin: int, end: int): Vec {
   let p = F[begin];
   for (let i = begin; i < end - 1; i++) {
@@ -119,20 +121,20 @@ function renormalize(A: Vec, outSize: int): Vec {
 
 /* === Arbitrary-precision operations === */
 
-// Algorithm 4
+// Algorithm 4 (rounded)
 export function add(A: Vec, B: Vec): Vec {
   let n = max(A.length, B.length);
   return renormalize(vecMerge(A, 0, A.length, B, 0, B.length), n);
 }
 
-// Negated Algorithm 4
+// Negated Algorithm 4 (rounded)
 export function sub(A: Vec, B: Vec): Vec {
   let n = max(A.length, B.length);
   return renormalize(vecMergeNeg(A, 0, A.length, B, 0, B.length), n);
 }
 
-// Algorithm 5
-// 2do: revisit memory consum
+// Algorithm 5 (rounded)
+// 2do: revisit memory consumtion
 export function mul(A: Vec, B: Vec): Vec {
   let n = A.length, m = B.length, d = max(n, m);
   let R = new Array<float>(d);
@@ -159,7 +161,7 @@ export function mul(A: Vec, B: Vec): Vec {
   return renormalize(R, d);
 }
 
-// Algorithm 10
+// Algorithm 9 (rounded)
 export function div(A: Vec, B: Vec): Vec {
   let n = A.length, m = B.length, d = max(n, m);
   let F: Array<float>;
@@ -167,7 +169,7 @@ export function div(A: Vec, B: Vec): Vec {
   let Q = new Array<float>(d);
   for (let i = 0; i < n; i++) R[i] = A[i];
   for (let i = n; i < d; i++) R[i] = 0;
-  for (let i = m; i < d; i++) B[i] = 0;
+  for (let i = m; i < d; i++) B[i] = 0; //revisit defenition
   Q[0] = A[0] / B[0];
   for (let i = 1; i < d; i++) {
     F = mul([Q[i - 1]], B);
@@ -177,4 +179,27 @@ export function div(A: Vec, B: Vec): Vec {
   return renormalize(Q, d);
 }
 
-//export function sqrt(A: Array<float>): Array<float> {  }
+/*
+// Algorithm 10
+export function div10(A: Vec, B: Vec): Vec {
+  let n = A.length, m = B.length, d = max(n, m);
+  for (let i = n; i < d; i++) A[i] = 0;
+  for (let i = m; i < d; i++) B[i] = 0;
+  let X = new Array<float>(d);
+  X[0] = 1 / B[0];
+  for (let i = 1; i < d; i++) X[i] = 0;
+  for (let i = 0; i < 2; i++) {
+    X = mul(X, sub([4], mul(X, B)));
+  }
+  return mul(A, X);
+}
+
+// Argorithm 11
+export function rsqrt(A: Vec): Vec {
+  let X: Array<float> = [1 / Math.sqrt(A[0])];
+  for (let i = 0; i < 4; i++) {
+    X = mul(div(X, [2]), sub([3], mul(X, mul(X, A))));
+  }
+  return X;
+}
+*/

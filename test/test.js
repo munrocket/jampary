@@ -104,3 +104,11 @@ test('4-4 operations', t => {
   diff = residual(expected, actual);
   t.ok(diff < eps, 'multiplicative inverse (diff=' + diff + ')');
 });
+
+// import { rsqrt } from '../dist/jamapry.esm.js';
+// test('reciprocal sqrt', t => {
+//   expected = e;
+//   actual = div([1], mul(rsqrt(e), rsqrt(e)));
+//   diff = residual(expected, actual);
+//   t.ok(diff < eps, 'multiplicative inverse (diff=' + diff + ')');
+// });
