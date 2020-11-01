@@ -11,7 +11,7 @@ const tsconfig = {
     "preserveConstEnums": true,
     "outDir": "./dist",
     "sourceMap": false,
-    "declaration": true,
+    "declaration": false,
     "lib": ["es2018"]
   },
   "include": ["src/**/*.ts"],
@@ -22,7 +22,7 @@ export default [
   {
     input: 'src/jampary.ts',
     output: [
-      { file: pkg.main, format: 'iife' },
+      { file: pkg.main, name: 'Jampary', format: 'iife' },
       { file: pkg.module, name: 'Jampary', format: 'esm' },
     ],
     plugins: [ typescript({ tsconfigOverride: tsconfig }) ]

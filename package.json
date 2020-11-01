@@ -8,13 +8,15 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -cw",
-    "http": "http-server -c-1 -p 1234",
+    "asbuild": "asc src/jampary.ts -b dist/jampary.wasm --optimizeLevel=3 --runtime=none",
+    "serve": "servez -p 1234",
     "test": "node --experimental-modules --no-warnings ./test/test.js"
   },
   "devDependencies": {
-    "http-server": "^0.12.0",
     "rollup": "^1.27.14",
+    "rollup-plugin-assemblyscript": "^1.2.0",
     "rollup-plugin-typescript2": "^0.25.3",
+    "servez": "^1.11.0",
     "typescript": "^3.7.4",
     "zora": "^3.1.8"
   },
