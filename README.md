@@ -8,7 +8,7 @@ Modern arbitrary-precision arithmetic library using floating-point expansions.
 ### 2do
 - [x] mvp
 - [x] mandel test
-- [ ] fix mul/div
+- [x] fix mul/div
 - [ ] optimization
 
 ### References

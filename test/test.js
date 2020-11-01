@@ -10,22 +10,8 @@ function residual(x, y) {
   return Math.abs(sub(x, y)[0]);
 }
 
-// import { vecSum, renormalize } from '../dist/jamapry.esm.js';
-//
-// test('helpers', t => {
-//   expected = pi;
-//   actual = vecSum(pi);
-//   diff = residual(expected, actual);
-//   t.ok(diff < eps, 'vecSum (diff=' + diff + ')');
-//
-//   expected = pi;
-//   actual = renormalize(pi, 4);
-//   diff = residual(expected, actual);
-//   t.ok(diff < eps, 'renormalize (diff=' + diff + ')');
-// });
-
 test('4-1 operations', t => {
-  let x = 1412.3400;
+  let x = 10000 * (Math.random() - 0.5);
 
   expected = pi;
   actual = add(add(pi, [x]), [-x]);
@@ -37,11 +23,6 @@ test('4-1 operations', t => {
   diff = residual(expected, actual);
   t.ok(diff < eps, 'sub41 (diff=' + diff + ')');
 
-  expected = pi;
-  actual = add(sub(pi, [x]), [x]);
-  diff = residual(expected, actual);
-  t.ok(diff < eps, 'add41/sub41 (diff=' + diff + ')');
-
   expected = pi2;
   actual = mul(pi, [2]);
   diff = residual(expected, actual);
@@ -52,10 +33,49 @@ test('4-1 operations', t => {
   diff = residual(expected, actual);
   t.ok(diff < eps, 'div41 (diff=' + diff + ')');
 
+  expected = pi;
+  actual = add(sub(pi, [x]), [x]);
+  diff = residual(expected, actual);
+  t.ok(diff < eps, 'additive inverse (diff=' + diff + ')');
+
   expected = e;
   actual = mul(div(e, [x]), [x]);
   diff = residual(expected, actual);
-  t.ok(diff < eps, 'mul41/div41 inverse (diff=' + diff + ')');
+  t.ok(diff < eps, 'muliplicative inverse (diff=' + diff + ')');
+});
+
+test('1-4 operations', t => {
+  let x = 10000 * (Math.random() - 0.5);
+
+  expected = pi;
+  actual = add([-x], add([x], pi));
+  diff = residual(expected, actual);
+  t.ok(diff < eps, 'add14 (diff=' + diff + ')');
+
+  expected = pi;
+  actual = sub([x], sub([x], pi));
+  diff = residual(expected, actual);
+  t.ok(diff < eps, 'sub14 (diff=' + diff + ')');
+
+  expected = pi2;
+  actual = mul([2], pi);
+  diff = residual(expected, actual);
+  t.ok(diff < eps, 'mul14 (diff=' + diff + ')');
+
+  expected = div([1], pi);
+  actual = div([2], pi2);
+  diff = residual(expected, actual);
+  t.ok(diff < eps, 'div14 (diff=' + diff + ')');
+
+  expected = mul(pi, [-1]);
+  actual = sub([x], add([x], pi));
+  diff = residual(expected, actual);
+  t.ok(diff < eps, 'additive inverse (diff=' + diff + ')');
+
+  expected = e;
+  actual = mul([x], div(e, [x]));
+  diff = residual(expected, actual);
+  t.ok(diff < eps, 'muliplicative inverse (diff=' + diff + ')');
 });
 
 test('4-4 operations', t => {
@@ -69,8 +89,8 @@ test('4-4 operations', t => {
   diff = residual(expected, actual);
   t.ok(diff < eps, 'sub (diff=' + diff + ')');
 
-  expected = [2];
-  actual = div(pi2, pi);
+  expected = e;
+  actual = div(pi, div(pi, e));
   diff = residual(expected, actual);
   t.ok(diff < eps, 'div (diff=' + diff + ')');
   
@@ -79,8 +99,8 @@ test('4-4 operations', t => {
   diff = residual(expected, actual);
   t.ok(diff < eps, 'additive inverse (diff=' + diff + ')');
 
-  // expected = pi;
-  // actual = mul(div(e, pi), pi);
-  // diff = residual(expected, actual);
-  // t.ok(diff < eps, 'multiplicative inverse (diff=' + diff + ')');
+  expected = e;
+  actual = mul(div(e, pi), pi);
+  diff = residual(expected, actual);
+  t.ok(diff < eps, 'multiplicative inverse (diff=' + diff + ')');
 });
