@@ -2,6 +2,19 @@ let maxIteration, pixelId;
 
 /* different calculators */
 
+function withJampary_Wasm(buffer, target, i, j) {
+  let iteration = wasm.mandelbrot(
+    maxIteration,
+    buffer.width,
+    buffer.height,
+    i, j,
+    target.x,
+    target.y,
+    target.dx,
+    target.dy);
+  colorizer(buffer, iteration - 1);
+}
+
 function withJampary(buffer, target, i, j) {
   let J = Jampary
   let iteration = 0;
@@ -200,7 +213,7 @@ window.onload = function() {
 
   //benchmark
   let now = () => (typeof performance != 'undefined') ? performance.now() : Date.now();
-  let calculators = [ withJampary, withDecimalJs, withBigNumberJs, withBigJs, withBigFloat32 ];
+  let calculators = [ withJampary_Wasm, withJampary, withDecimalJs, withBigNumberJs, withBigJs, withBigFloat32 ];
   calculators.forEach((calculator) => setTimeout(() => {
 
     // show debug

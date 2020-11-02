@@ -8,7 +8,7 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -cw",
-    "asbuild": "asc src/jampary.ts -b dist/jampary.wasm --optimizeLevel=3 --runtime=none",
+    "asbuild": "asc src/jampary.ts -b dist/jampary.wasm --optimizeLevel=3 --shrinkLevel=1 --runtime=none",
     "serve": "servez -p 1234",
     "test": "node --experimental-modules --no-warnings ./test/test.js"
   },

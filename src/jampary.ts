@@ -1,7 +1,10 @@
-type float = number;//f64;
-type int = number;//i32;
-let max = Math.max;
-let math_sqrt = Math.sqrt;
+// type float = number;
+// type int = number;
+// let max = Math.max;
+// let sqrt = Math.sqrt;
+
+type float = f64;
+type int = i32;
 
 type Vec = Array<float>;
 const splitter = 134217729.; // = 2^27+1 for 64-bit float
@@ -10,6 +13,7 @@ let EE: float; // global variable for storing temp error
 /* === Basic EFT bricks === */
 
 // 2do: inline
+@inline
 function quickSum(a: float, b: float): float {
   let s = a + b;
   EE = b - (s - a);
@@ -17,6 +21,7 @@ function quickSum(a: float, b: float): float {
 }
 
 // Algorithm 3.1 from [2]
+@inline
 function twoSum(a: float, b: float): float {
   let s = a + b;
   let t  = s - b;
@@ -25,6 +30,7 @@ function twoSum(a: float, b: float): float {
 }
 
 // Algorithm 3.3 with inlined 3.2 from [2]
+@inline
 function twoProd(a: float, b: float): float {
   let t = splitter * a;
   let ah = t + (a - t), al = a - ah;
@@ -37,8 +43,8 @@ function twoProd(a: float, b: float): float {
 
 /* === Vectorized helpers === */
 
-// Merge two descending sorted arrays of floats into one sorted array
-// opt hypo: simple merge with twoSum
+// Merge two descending sorted Arrays of floats into one sorted Array
+// opt hypo: simple merge (concat) with twoSum
 function vecMerge(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
   let len = Ar - Al + Br - Bl;
   let R = new Array<float>(len);
@@ -59,7 +65,7 @@ function vecMergeNeg(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
   let R = new Array<float>(len);
   let i = Al, j = Bl, k = 0;
   while (k < len) {
-    if (i < Ar   && j < Br) {
+    if (i < Ar && j < Br) {
       R[k++] = (Math.abs(A[i]) > Math.abs(B[j])) ? A[i++] : -B[j++];
     } else {
       R[k++] = (i < Ar) ? A[i++] : -B[j++];
@@ -94,7 +100,7 @@ function vecSumErrBranch(E: Vec, outSize: int): Vec {
     }
   }
   if (e != 0. && j < outSize) F[j++] = e;
-  for (let i = j; i < outSize; i++) F[i] = 0;
+  for (let i = j; i < outSize; i++) F[i] = 0.;
   return F;
 }
 
@@ -116,7 +122,7 @@ function renormalize(A: Vec, outSize: int): Vec {
   for (let i = 0; i < outSize; i++) {
     F = vecSumErr(F, i, outSize);
   }
-  return F.slice(0, outSize);//why?
+  return F.slice(0, outSize);
 }
 
 /* === Arbitrary-precision operations === */
@@ -137,16 +143,26 @@ export function sub(A: Vec, B: Vec): Vec {
 // 2do: revisit memory consumtion
 export function mul(A: Vec, B: Vec): Vec {
   let n = A.length, m = B.length, d = max(n, m);
-  let R = new Array<float>(d);
+  let R = new Array<float>(d + 1);
   let P = new Array<float>(d);
   let E = new Array<float>(d * d);
   let E2 = new Array<float>(d);
   let S: Array<float>;
-  for (let i = n; i < d; i++) A[i] = 0;
-  for (let i = m; i < d; i++) B[i] = 0;
+  if (n < d) {
+    let T = A;
+    A = new Array<float>(d);
+    for (let i = 0; i < n; i++) A[i] = T[i];
+    for (let i = n; i < d; i++) A[i] = 0.;
+  }
+  if (m < d) {
+    let T = B;
+    B = new Array<float>(d);
+    for (let i = 0; i < m; i++) B[i] = T[i];
+    for (let i = m; i < d; i++) B[i] = 0.;
+  }
   R[0] = twoProd(A[0], B[0]);
   E[0] = EE;
-  R[d] = 0;
+  R[d] = 0.;
   for (let n = 1; n < d; n++) {
     for (let i = 0; i <= n; i++) {
       P[i] = twoProd(A[i], B[n - i]);
@@ -164,16 +180,22 @@ export function mul(A: Vec, B: Vec): Vec {
 // Algorithm 9 (rounded)
 export function div(A: Vec, B: Vec): Vec {
   let n = A.length, m = B.length, d = max(n, m);
-  let F: Array<float>;
+  let T: Array<float>;
   let R = new Array<float>(d);
   let Q = new Array<float>(d);
   for (let i = 0; i < n; i++) R[i] = A[i];
-  for (let i = n; i < d; i++) R[i] = 0;
-  for (let i = m; i < d; i++) B[i] = 0; //revisit defenition
+  for (let i = n; i < d; i++) R[i] = 0.;
+  for (let i = m; i < d; i++) B[i] = 0.;
+  if (m < d) {
+    T = B;
+    B = new Array<float>(d);
+    for (let i = 0; i < m; i++) B[i] = T[i];
+    for (let i = m; i < d; i++) B[i] = 0.;
+  }
   Q[0] = A[0] / B[0];
   for (let i = 1; i < d; i++) {
-    F = mul([Q[i - 1]], B);
-    R = renormalize(sub(R, F), d);
+    T = mul([Q[i - 1]], B);
+    R = renormalize(sub(R, T), d);
     Q[i] = R[0] / B[0];
   }
   return renormalize(Q, d);
@@ -183,23 +205,46 @@ export function div(A: Vec, B: Vec): Vec {
 // Algorithm 10
 export function div10(A: Vec, B: Vec): Vec {
   let n = A.length, m = B.length, d = max(n, m);
-  for (let i = n; i < d; i++) A[i] = 0;
-  for (let i = m; i < d; i++) B[i] = 0;
-  let X = new Array<float>(d);
-  X[0] = 1 / B[0];
-  for (let i = 1; i < d; i++) X[i] = 0;
-  for (let i = 0; i < 2; i++) {
-    X = mul(X, sub([4], mul(X, B)));
+  for (let i = n; i < d; i++) A[i] = 0.;
+  for (let i = m; i < d; i++) B[i] = 0.;
+  let X: Array<float> = [1. / B[0]];
+  for (let i = 0; i < 4; i++) {
+    X = mul(X, sub([4.], mul(X, B)));
   }
   return mul(A, X);
 }
 
 // Argorithm 11
 export function rsqrt(A: Vec): Vec {
-  let X: Array<float> = [1 / Math.sqrt(A[0])];
+  let X: Array<float> = [1. / sqrt(A[0])];
   for (let i = 0; i < 4; i++) {
-    X = mul(div(X, [2]), sub([3], mul(X, mul(X, A))));
+    X = mul(div(X, [2.]), sub([3.], mul(X, mul(X, A))));
   }
   return X;
 }
 */
+
+export function mandelbrot(maxIteration: int, width: float, height: float, i: float, j: float,
+    x0: float, y0: float, dx: float, dy: float): int {
+  let iteration: int = 0;
+  let x: Array<float> = [0.,0.]; let y: Array<float> = [0.,0.];
+  let xx: Array<float> = [0.,0.]; let xy: Array<float> = [0.,0.]; let yy: Array<float> = [0.,0.];
+  let tx: Array<float> = [x0,0.]; let ty: Array<float> = [y0,0.];
+  let tdx: Array<float> = [dx,0.]; let tdy: Array<float> = [dy,0.];
+  let I: Array<float> = [2.*i,0.]; let J: Array<float> = [2.*j,0.];
+  let W: Array<float> = [width,0.]; let H: Array<float> = [height,0.];
+  let cx: Array<float> = add(sub(tx, tdx), div(mul(tdx, I), W));
+  let cy: Array<float> = sub(add(ty, tdy), div(mul(tdy, J), H));
+  while (iteration++ < maxIteration && add(xx, yy)[0] < 4.) {
+    x = add(sub(xx, yy), cx);
+    y = add(add(xy, xy), cy);
+    xx = mul(x, x);
+    yy = mul(y, y);
+    xy = mul(x, y);
+  }
+  return iteration; 
+}
+
+export function test(): float {
+  return 42.;
+}
