@@ -9,7 +9,6 @@ Modern arbitrary-precision arithmetic library using floating-point expansions.
 - [x] mvp
 - [x] mandel test
 - [x] fix mul/div
-- [ ] merge hypotesis
 - [ ] optimization
 
 ### References
