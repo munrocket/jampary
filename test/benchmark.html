@@ -7,43 +7,38 @@
   <title>Benchmark</title>
   <link rel="icon" href="data:;base64,iVBORwOKGO=" />
   <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+  <style>
+    .wrapper {
+      display: flex;
+      justify-content: left;
+      align-items: center;
+      height: 200px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Precision test and benchmark</h1>
-  <div style="position: absolute">
-    <canvas id="splitTest" width="200" height="100" style="position: absolute; padding-left: 120px;"></canvas>
-    <canvas id="barChart" width="400" height="200" style="position: absolute; padding-top: 110px"></canvas>
-    <div class="bench-popup" style="display: none; position: absolute; padding-left: 85px; padding-top: 147px;">
-      <div style="padding-top: 8px;"><canvas id="withJampary_Wasm" width="15" height="10"></canvas></div>
-      <div style="padding-top: 8px;"><canvas id="withJampary" width="15" height="10"></canvas></div>
-      <div style="padding-top: 8px;"><canvas id="withDecimalJs" width="15" height="10"></canvas></div>
-      <div style="padding-top: 8px;"><canvas id="withBigNumberJs" width="15" height="10"></canvas></div>
-      <div style="padding-top: 8px;"><canvas id="withBigJs" width="15" height="10"></canvas></div>
-      <div style="padding-top: 8px;"><canvas id="withBigFloat32" width="15" height="10"></canvas></div>
+  <h1 id="title">Loading libraries...</h1>
+  <div class="wrapper">
+    <div style="width: 400px; align-content: center;">
+      <canvas id="split-test" style="width: 400px; height: 200px;"></canvas>
     </div>
+    <div id="bar-chart" style="padding-left: 10px; width: 500px; height: 200px;"></div>
   </div>
-  <p class="bench-popup" style="display: none; font-family: 'Open Sans', sans; padding-top: 323px">
-    Probably ChartJS visualization not working in Safari and mobile phones.<br/>
-    All libraries in benchmark spending 1500 milliseconds and setted to precision with 46 decimal digits.
-    To increase Big.js and BigNumber.js I used .round(31) and .dp(31) after each multiplication without rouding they become much slower.
-  </p>
-
-  <!-- wasm version -->
-  <script>
-    let wasm, imports = { env: { abort() { console.error("abort called");}}};
-    fetch('/dist/jampary.wasm').then(response =>
-      response.arrayBuffer()
-    ).then(bytes => WebAssembly.instantiate(bytes, imports)).then(results => {
-      wasm = results.instance.exports;
-      console.log('wasm loaded, test=' + wasm.test());
-    }).catch(() => {
-      wasm = { mandelbrot: () => 1 };
-      console.log('wasm not supported and stabbed!');
-    });
-  </script>
+  <div class="bench-popup" style="display: none; font-family: 'Open Sans', sans; padding-top: 323px">
+    All libraries in benchmark spending 1000 milliseconds and setted to precision with 46 decimal digits. <br>
+    To increase Big.js and BigNumber.js performance .round(31) and .dp(31) is used.
+  </div>
+  <div style="padding-top: 10px">
+    <span><canvas id="withJampary_Wasm" width="15" height="10"></canvas></span>
+    <span><canvas id="withJampary" width="15" height="10"></canvas></span>
+    <span><canvas id="withDecimalJs" width="15" height="10"></canvas></span>
+    <span><canvas id="withBigNumberJs" width="15" height="10"></canvas></span>
+    <span><canvas id="withBigJs" width="15" height="10"></canvas></span>
+    <span><canvas id="withBigFloat32" width="15" height="10"></canvas></span>
+  </div>
 
   <script src="../dist/jampary.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
   <script src="https://unpkg.com/double.js"></script>
   <script src="https://unpkg.com/decimal.js"></script>
   <script src="https://unpkg.com/bignumber.js"></script>

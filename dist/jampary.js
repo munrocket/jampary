@@ -73,7 +73,7 @@ var Jampary = (function (exports) {
       if (e != 0. && j < outSize)
           F[j++] = e;
       for (let i = j; i < outSize; i++)
-          F[i] = 0;
+          F[i] = 0.;
       return F;
   }
   function vecSumErr(F, begin, end) {
@@ -102,18 +102,30 @@ var Jampary = (function (exports) {
   }
   function mul(A, B) {
       let n = A.length, m = B.length, d = max(n, m);
-      let R = new Array(d);
+      let R = new Array(d + 1);
       let P = new Array(d);
       let E = new Array(d * d);
       let E2 = new Array(d);
       let S;
-      for (let i = n; i < d; i++)
-          A[i] = 0;
-      for (let i = m; i < d; i++)
-          B[i] = 0;
+      if (n < d) {
+          let T = A;
+          A = new Array(d);
+          for (let i = 0; i < n; i++)
+              A[i] = T[i];
+          for (let i = n; i < d; i++)
+              A[i] = 0.;
+      }
+      if (m < d) {
+          let T = B;
+          B = new Array(d);
+          for (let i = 0; i < m; i++)
+              B[i] = T[i];
+          for (let i = m; i < d; i++)
+              B[i] = 0.;
+      }
       R[0] = twoProd(A[0], B[0]);
       E[0] = EE;
-      R[d] = 0;
+      R[d] = 0.;
       for (let n = 1; n < d; n++) {
           for (let i = 0; i <= n; i++) {
               P[i] = twoProd(A[i], B[n - i]);
@@ -131,28 +143,67 @@ var Jampary = (function (exports) {
   }
   function div(A, B) {
       let n = A.length, m = B.length, d = max(n, m);
-      let F;
+      let T;
       let R = new Array(d);
       let Q = new Array(d);
       for (let i = 0; i < n; i++)
           R[i] = A[i];
       for (let i = n; i < d; i++)
-          R[i] = 0;
+          R[i] = 0.;
       for (let i = m; i < d; i++)
-          B[i] = 0;
+          B[i] = 0.;
+      if (m < d) {
+          T = B;
+          B = new Array(d);
+          for (let i = 0; i < m; i++)
+              B[i] = T[i];
+          for (let i = m; i < d; i++)
+              B[i] = 0.;
+      }
       Q[0] = A[0] / B[0];
       for (let i = 1; i < d; i++) {
-          F = mul([Q[i - 1]], B);
-          R = renormalize(sub(R, F), d);
+          T = mul([Q[i - 1]], B);
+          R = renormalize(sub(R, T), d);
           Q[i] = R[0] / B[0];
       }
       return renormalize(Q, d);
   }
+  function mandelbrot(maxIteration, width, height, i, j, x0, y0, dx, dy) {
+      let iteration = 0;
+      let x = [0., 0.];
+      let y = [0., 0.];
+      let xx = [0., 0.];
+      let xy = [0., 0.];
+      let yy = [0., 0.];
+      let tx = [x0, 0.];
+      let ty = [y0, 0.];
+      let tdx = [dx, 0.];
+      let tdy = [dy, 0.];
+      let I = [2. * i, 0.];
+      let J = [2. * j, 0.];
+      let W = [width, 0.];
+      let H = [height, 0.];
+      let cx = add(sub(tx, tdx), div(mul(tdx, I), W));
+      let cy = sub(add(ty, tdy), div(mul(tdy, J), H));
+      while (iteration++ < maxIteration && add(xx, yy)[0] < 4.) {
+          x = add(sub(xx, yy), cx);
+          y = add(add(xy, xy), cy);
+          xx = mul(x, x);
+          yy = mul(y, y);
+          xy = mul(x, y);
+      }
+      return iteration;
+  }
+  function test() {
+      return 42.;
+  }
 
   exports.add = add;
   exports.div = div;
+  exports.mandelbrot = mandelbrot;
   exports.mul = mul;
   exports.sub = sub;
+  exports.test = test;
 
   return exports;
 

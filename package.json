@@ -2,6 +2,8 @@
   "name": "jampary",
   "version": "0.0.2",
   "description": "Modern arbitrary-precision arithmetic library using floating-point expansions.",
+  "author": "munrocket",
+  "license": "MIT",
   "main": "dist/jampary.js",
   "module": "dist/jamapry.esm.js",
   "type": "module",
@@ -24,14 +26,11 @@
     "campary",
     "mpfr",
     "gmp",
-    "qd",
-    "double-double",
+    "eft",
     "bigfloat",
     "bigdecimal",
     "bignumber.js",
     "decimal.js",
     "big.js"
-  ],
-  "author": "munrocket",
-  "license": "MIT"
+  ]
 }

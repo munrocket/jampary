@@ -2,8 +2,8 @@
 
 Modern arbitrary-precision arithmetic library using floating-point expansions.
 
-### Early stage results without FMA
-![](https://habrastorage.org/webt/dd/4u/ku/dd4ukummfiy1zxghmc-noyxh5cq.png)
+### Early stage results without wasm and FMA
+![](https://habrastorage.org/webt/ky/ag/px/kyagpxlqqxcezuszpfn6qna83rc.png)
 
 ### 2do
 - [x] mvp

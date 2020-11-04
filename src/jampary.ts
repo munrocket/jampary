@@ -1,10 +1,10 @@
-// type float = number;
-// type int = number;
-// let max = Math.max;
-// let sqrt = Math.sqrt;
+type float = number;
+type int = number;
+let max = Math.max;
+let sqrt = Math.sqrt;
 
-type float = f64;
-type int = i32;
+// type float = f64;
+// type int = i32;
 
 type Vec = Array<float>;
 const splitter = 134217729.; // = 2^27+1 for 64-bit float
@@ -12,16 +12,16 @@ let EE: float; // global variable for storing temp error
 
 /* === Basic EFT bricks === */
 
-// 2do: inline
-@inline
+// Algorithm 3.2
+//@as-inline
 function quickSum(a: float, b: float): float {
   let s = a + b;
   EE = b - (s - a);
   return s;
 }
 
-// Algorithm 3.1 from [2]
-@inline
+// Algorithm 3.1
+//@as-inline
 function twoSum(a: float, b: float): float {
   let s = a + b;
   let t  = s - b;
@@ -29,8 +29,8 @@ function twoSum(a: float, b: float): float {
   return s;
 }
 
-// Algorithm 3.3 with inlined 3.2 from [2]
-@inline
+// Algorithm 3.3 with inlined 3.2
+//@as-inline
 function twoProd(a: float, b: float): float {
   let t = splitter * a;
   let ah = t + (a - t), al = a - ah;
@@ -44,7 +44,6 @@ function twoProd(a: float, b: float): float {
 /* === Vectorized helpers === */
 
 // Merge two descending sorted Arrays of floats into one sorted Array
-// opt hypo: simple merge (concat) with twoSum
 function vecMerge(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
   let len = Ar - Al + Br - Bl;
   let R = new Array<float>(len);
@@ -105,7 +104,7 @@ function vecSumErrBranch(E: Vec, outSize: int): Vec {
 }
 
 // Algorithm 8
-// 2do in release: inline
+//@as-inline
 function vecSumErr(F: Vec, begin: int, end: int): Vec {
   let p = F[begin];
   for (let i = begin; i < end - 1; i++) {
