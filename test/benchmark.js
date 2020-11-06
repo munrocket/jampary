@@ -4,60 +4,68 @@ let wasm;
 window.onload = function() {
 
   // set params
-  let maxIter = 1000;
+  let maxIter = 3000;
   let target = { x: -1.7490863748149415, y: -1e-25, dx: 3e-15, dy: 2e-15};
 
+  // load wasm helper
+  function loadWasm(url, catchFn, thenFn) {
+    let imports = { env: { abort() { console.error("abort called");}}};
+    fetch(url).then(response =>
+      response.arrayBuffer()
+    ).then(bytes => WebAssembly.instantiate(bytes, imports)).then(results => {
+      thenFn(results.instance.exports);
+    }).catch(() => {
+      catchFn();
+    });
+  }
+
+  // test wasm
+  loadWasm('/test/test.wasm', () => {}, w => console.log('wasm test =', w.test()));
+
   // load wasm
-  let imports = { env: { abort() { console.error("abort called");}}};
-  fetch('/dist/jampary.wasm').then(response =>
-    response.arrayBuffer()
-  ).then(bytes => WebAssembly.instantiate(bytes, imports)).then(results => {
-    wasm = results.instance.exports;
-    console.log('wasm loaded, test=' + wasm.test());
-  }).catch(() => {
-    wasm = { mandelbrot: () => 1 };
-    console.log('wasm not supported or some error!');
-  }).finally(() => {
-
-    document.getElementById('title').innerHTML = 'Benchmarking...';
-    setTimeout(() => {
-
-      // set equal precision and params
-      Big.DP = 46;
-      Decimal.set({ precision: 46 });
-      BigNumber.set({ DECIMAL_PLACES: 46 });
-
-      // benchmark
-      let popups = document.getElementsByClassName('bench-popup');
-      popups[0].style.display = 'block';
-      let now = () => (typeof performance != 'undefined') ? performance.now() : Date.now();
-      let calculators = [ //withJampary_Wasm,
-        withJampary, withBigNumberJs, withDecimalJs, withBigJs, withBigFloat32
-      ]
-      calculators.forEach(calculator => {
-        let start = now();
-        let end = start;
-        let counter = 0;
-        while (end < start + 1000) {
-          counter++;
-          draw(calculator, maxIter, target);
-          end = now();
-        };
-        calculator.benchmark = (end - start) / counter;
-      });
-
-      // draw charts
-      drawCharts(calculators);
-      document.getElementById('title').innerHTML = 'Drawing split test...';
-
-      // draw split test
+  loadWasm('/dist/jampary.wasm',
+    () => { wasm = { mandelbrot: () => 1 }; console.log('wasm not supported!'); },
+    (wa) => {
+      wasm = wa;
+      document.getElementById('title').innerHTML = 'Benchmarking...';
       setTimeout(() => {
-        drawSplitTest(withJampary, withNumber, maxIter, target);
-        document.getElementById('title').innerHTML = 'Split test and benchmark';
-      }, 10);
 
-    }, 10);
-  });
+        // set equal precision and params
+        Big.DP = 46;
+        Decimal.set({ precision: 46 });
+        BigNumber.set({ DECIMAL_PLACES: 46 });
+
+        // benchmark
+        let popups = document.getElementsByClassName('bench-popup');
+        popups[0].style.display = 'block';
+        let now = () => (typeof performance != 'undefined') ? performance.now() : Date.now();
+        let calculators = [ withJampary_Wasm,
+          withJampary, withBigNumberJs, withDecimalJs, withBigJs, withBigFloat32
+        ]
+        calculators.forEach(calculator => {
+          let start = now();
+          let end = start;
+          let counter = 0;
+          while (end < start + 1000) {
+            counter++;
+            draw(calculator, maxIter, target);
+            end = now();
+          };
+          calculator.benchmark = (end - start) / counter;
+        });
+
+        // draw charts
+        drawCharts(calculators);
+        document.getElementById('title').innerHTML = 'Drawing split test...';
+
+        // draw split test
+        // setTimeout(() => {
+        //   drawSplitTest(withJampary, withNumber, maxIter, target);
+        //   document.getElementById('title').innerHTML = 'Split test and benchmark';
+        // }, 10);
+
+      }, 10);
+    });
 }
 
 /* different calculators */
@@ -255,7 +263,7 @@ function drawSplitTest(calc1, calc2, maxIter, target) {
   ctx.moveTo(0,0);
   ctx.lineTo(buffer.width, buffer.height);
   ctx.stroke();
-  ctx.font = 'bold 15px Open Sans';
+  ctx.font = 'bold 14px Open Sans';
   ctx.fillStyle = '#FFF';
   ctx.fillText(calc1.name.slice(4), canvas.width - 63, 15);
   ctx.fillText(calc2.name.slice(4), 6, canvas.height - 8);

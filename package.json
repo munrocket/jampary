@@ -10,11 +10,12 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -cw",
-    "asbuild": "asc src/jampary.ts -b dist/jampary.wasm --optimizeLevel=3 --shrinkLevel=1 --runtime=none",
+    "asbuild": "asc src/jampary.ts -b dist/jampary.wasm -O3 --runtime=none && asc test/test.ts -b test/test.wasm -O3 --runtime=none",
     "serve": "servez -p 1234",
     "test": "node --experimental-modules --no-warnings ./test/test.js"
   },
   "devDependencies": {
+    "assemblyscript": "^0.17.1",
     "rollup": "^1.27.14",
     "rollup-plugin-assemblyscript": "^1.2.0",
     "rollup-plugin-typescript2": "^0.25.3",

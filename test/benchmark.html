@@ -7,24 +7,16 @@
   <title>Benchmark</title>
   <link rel="icon" href="data:;base64,iVBORwOKGO=" />
   <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-  <style>
-    .wrapper {
-      display: flex;
-      justify-content: left;
-      align-items: center;
-      height: 200px;
-    }
-  </style>
 </head>
 <body>
   <h1 id="title">Loading libraries...</h1>
-  <div class="wrapper">
+  <div style="display: flex; justify-content: left; align-items: center; height: 200px;">
     <div style="width: 400px; align-content: center;">
       <canvas id="split-test" style="width: 400px; height: 200px;"></canvas>
     </div>
     <div id="bar-chart" style="padding-left: 10px; width: 500px; height: 200px;"></div>
   </div>
-  <div class="bench-popup" style="display: none; font-family: 'Open Sans', sans; padding-top: 323px">
+  <div class="bench-popup" style="display: none; font-family: 'Open Sans', sans; padding-top: 10px">
     All libraries in benchmark spending 1000 milliseconds and setted to precision with 46 decimal digits. <br>
     To increase Big.js and BigNumber.js performance .round(31) and .dp(31) is used.
   </div>
