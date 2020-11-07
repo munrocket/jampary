@@ -44,6 +44,7 @@ function twoProd(a: float, b: float): float {
 /* === Vectorized helpers === */
 
 // Merge two descending sorted arrs of floats into one sorted arr
+@inline
 function vecMerge(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
   let len = Ar - Al + Br - Bl;
   let R = new StaticArray<float>(len);
@@ -59,6 +60,7 @@ function vecMerge(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
 }
 
 // Merge and negate
+@inline
 function vecMergeNeg(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
   let len = Ar - Al + Br - Bl;
   let R = new StaticArray<float>(len);
@@ -74,6 +76,7 @@ function vecMergeNeg(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
 }
 
 // Algorithm 3
+@inline
 function vecSum(A: Vec): Vec {
   let E = new StaticArray<float>(A.length);
   let s = A[A.length - 1];
@@ -191,8 +194,7 @@ export function div(A: Vec, B: Vec): Vec {
   return renormalize(Q, d);
 }
 
-/*
-// Algorithm 10
+// Algorithm 10 (not tested)
 export function div10(A: Vec, B: Vec): Vec {
   let n = A.length, m = B.length, d = max(n, m);
   //for (let i = n; i < d; ++i) A[i] = 0.;
@@ -204,7 +206,7 @@ export function div10(A: Vec, B: Vec): Vec {
   return mul(A, X);
 }
 
-// Argorithm 11
+// Argorithm 11 (not tested)
 export function rsqrt(A: Vec): Vec {
   let X: StaticArray<float> = [1. / sqrt(A[0])];
   for (let i = 0; i < 4; ++i) {
@@ -212,17 +214,16 @@ export function rsqrt(A: Vec): Vec {
   }
   return X;
 }
-*/
 
 export function mandelbrot(maxIteration: int, width: float, height: float, i: float, j: float,
     x0: float, y0: float, dx: float, dy: float): int {
   let iteration: int = 0;
-  let x: StaticArray<float> = [0.,0.]; let y: StaticArray<float> = [0.,0.];
-  let xx: StaticArray<float> = [0.,0.]; let xy: StaticArray<float> = [0.,0.]; let yy: StaticArray<float> = [0.,0.];
-  let tx: StaticArray<float> = [x0,0.]; let ty: StaticArray<float> = [y0,0.];
-  let tdx: StaticArray<float> = [dx,0.]; let tdy: StaticArray<float> = [dy,0.];
-  let I: StaticArray<float> = [2.*i,0.]; let J: StaticArray<float> = [2.*j,0.];
-  let W: StaticArray<float> = [width,0.]; let H: StaticArray<float> = [height,0.];
+  let x: StaticArray<float> = [0.,0.,0.,0.]; let y: StaticArray<float> = [0.,0.,0.,0.];
+  let xx: StaticArray<float> = [0.,0.,0.,0.]; let xy: StaticArray<float> = [0.,0.,0.,0.]; let yy: StaticArray<float> = [0.,0.,0.,0.];
+  let tx: StaticArray<float> = [x0,0.,0.,0.]; let ty: StaticArray<float> = [y0,0.,0.,0.];
+  let tdx: StaticArray<float> = [dx,0.,0.,0.]; let tdy: StaticArray<float> = [dy,0.,0.,0.];
+  let I: StaticArray<float> = [2.*i,0.,0.,0.]; let J: StaticArray<float> = [2.*j,0.,0.,0.];
+  let W: StaticArray<float> = [width,0.,0.,0.]; let H: StaticArray<float> = [height,0.,0.,0.];
   let cx: StaticArray<float> = add(sub(tx, tdx), div(mul(tdx, I), W));
   let cy: StaticArray<float> = sub(add(ty, tdy), div(mul(tdy, J), H));
   while (iteration++ < maxIteration && add(xx, yy)[0] < 4.) {

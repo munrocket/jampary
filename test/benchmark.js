@@ -1,11 +1,18 @@
 /* initialization */
 
-let wasm;
+let WASM;
+let DECIMAL_PLACES = 63;
+
 window.onload = function() {
 
   // set params
-  let maxIter = 3000;
+  let maxIter = 10000;
   let target = { x: -1.7490863748149415, y: -1e-25, dx: 3e-15, dy: 2e-15};
+
+  // set equal precision and params
+  Big.DP = DECIMAL_PLACES;
+  Decimal.set({ precision: DECIMAL_PLACES });
+  BigNumber.set({ DECIMAL_PLACES });
 
   // load wasm helper
   function loadWasm(url, catchFn, thenFn) {
@@ -24,16 +31,11 @@ window.onload = function() {
 
   // load wasm
   loadWasm('/dist/jampary.wasm',
-    () => { wasm = { mandelbrot: () => 1 }; console.log('wasm not supported!'); },
-    (wa) => {
-      wasm = wa;
+    () => { WASM = { mandelbrot: () => 1 }; console.log('wasm not supported!'); },
+    (wasm) => {
+      WASM = wasm;
       document.getElementById('title').innerHTML = 'Benchmarking...';
       setTimeout(() => {
-
-        // set equal precision and params
-        Big.DP = 46;
-        Decimal.set({ precision: 46 });
-        BigNumber.set({ DECIMAL_PLACES: 46 });
 
         // benchmark
         let popups = document.getElementsByClassName('bench-popup');
@@ -71,7 +73,7 @@ window.onload = function() {
 /* different calculators */
 
 function withJampary_Wasm(maxIter, target, buffer, pixel) {
-  let iter = wasm.mandelbrot(
+  let iter = WASM.mandelbrot(
     maxIter,
     buffer.width,
     buffer.height,
@@ -87,13 +89,13 @@ function withJampary_Wasm(maxIter, target, buffer, pixel) {
 
 function withJampary(maxIter, target, buffer, pixel) {
   let J = Jampary
-  let iter = 0;
-  let x = [0,0,0], y = [0,0,0];
-  let xx = [0,0,0], xy = [0,0,0], yy = [0,0,0];
-  let tx = [target.x,0,0], ty = [target.y,0,0];
-  let tdx = [target.dx,0,0], tdy = [target.dy,0,0];
-  let cx = J.add(J.sub(tx, tdx), J.div(J.mul(tdx, [2 * pixel.i]), [buffer.width]));
-  let cy = J.sub(J.add(ty, tdy), J.div(J.mul(tdy, [2 * pixel.j]), [buffer.height]));
+  let iter = 0; 
+  let x = [0,0,0,0], y = [0,0,0,0];
+  let xx = [0,0,0,0], xy = [0,0,0,0], yy = [0,0,0,0];
+  let tx = [target.x,0,0,0], ty = [target.y,0,0,0];
+  let tdx = [target.dx,0,0,0], tdy = [target.dy,0,0,0];
+  let cx = J.add(J.sub(tx, tdx), J.div(J.mul(tdx, [2 * pixel.i,0,0,0]), [buffer.width,0,0,0]));
+  let cy = J.sub(J.add(ty, tdy), J.div(J.mul(tdy, [2 * pixel.j,0,0,0]), [buffer.height,0,0,0]));
   while (iter++ < maxIter && J.add(xx, yy)[0] < 4) {
     x = J.add(J.sub(xx, yy), cx);
     y = J.add(J.add(xy, xy), cy);
@@ -118,25 +120,6 @@ function withNumber(maxIter, target, buffer, pixel) {
     xy = x * y;
   }
   colorizer(maxIter, iter - 1, buffer, pixel)
-}
-
-function withDoubleJs(maxIter, target, buffer, pixel) {
-  let D = Double;
-  let iter = 0;
-  let x = D.Zero, y = D.Zero;
-  let xx = D.Zero, xy = D.Zero, yy = D.Zero;
-  let tx = new D(target.x), ty = new D(target.y);
-  let tdx = new D(target.dx), tdy = new D(target.dy);
-  let cx = tx.sub(tdx).add(tdx.mul(new D(2 * pixel.i)).div(new D(buffer.width)));
-  let cy = ty.add(tdy).sub(tdy.mul(new D(2 * pixel.j)).div(new D(buffer.height)));
-  while (iter++ < maxIter && xx.add(yy).lt(4)) {
-    x = xx.sub(yy).add(cx);
-    y = xy.add(xy).add(cy);
-    xx = x.sqr();
-    yy = y.sqr();
-    xy = x.mul(y);
-  }
-  colorizer(maxIter, iter - 1, buffer, pixel);
 }
 
 function withDecimalJs(maxIter, target, buffer, pixel) {
@@ -164,14 +147,14 @@ function withBigNumberJs(maxIter, target, buffer, pixel) {
   let xx = new BN(0), xy = new BN(0), yy = new BN(0);
   let tx = new BN(target.x), ty = new BN(target.y);
   let tdx = new BN(target.dx), tdy = new BN(target.dy);
-  let cx = tx.minus(tdx).plus(tdx.times(2 * pixel.i).div(buffer.width)).dp(31);
-  let cy = ty.plus(tdy).minus(tdy.times(2 * pixel.j).div(buffer.height)).dp(31);
+  let cx = tx.minus(tdx).plus(tdx.times(2 * pixel.i).div(buffer.width)).dp(DECIMAL_PLACES);
+  let cy = ty.plus(tdy).minus(tdy.times(2 * pixel.j).div(buffer.height)).dp(DECIMAL_PLACES);
   while (iter++ < maxIter && xx.plus(yy).toString() < 4) {
     x = xx.minus(yy).plus(cx);
     y = xy.plus(xy).plus(cy);
-    xx = x.times(x).dp(31);
-    yy = y.times(y).dp(31);
-    xy = x.times(y).dp(31);
+    xx = x.times(x).dp(DECIMAL_PLACES);
+    yy = y.times(y).dp(DECIMAL_PLACES);
+    xy = x.times(y).dp(DECIMAL_PLACES);
   }
   colorizer(maxIter, iter - 1, buffer, pixel); 
 }
@@ -182,14 +165,14 @@ function withBigJs(maxIter, target, buffer, pixel) {
   let xx = new Big(0), xy = new Big(0), yy = new Big(0);
   let tx = new Big(target.x), ty = new Big(target.y);
   let tdx = new Big(target.dx), tdy = new Big(target.dy);
-  let cx = tx.sub(tdx).add(tdx.mul(2 * pixel.i).div(buffer.width)).round(31);
-  let cy = ty.add(tdy).sub(tdy.mul(2 * pixel.j).div(buffer.height)).round(31);
+  let cx = tx.sub(tdx).add(tdx.mul(2 * pixel.i).div(buffer.width)).round(DECIMAL_PLACES);
+  let cy = ty.add(tdy).sub(tdy.mul(2 * pixel.j).div(buffer.height)).round(DECIMAL_PLACES);
   while (iter++ < maxIter && xx.add(yy).toString() < 4) {
     x = xx.sub(yy).add(cx);
     y = xy.add(xy).add(cy);
-    xx = x.mul(x).round(31);
-    yy = y.mul(y).round(31);
-    xy = x.mul(y).round(31);
+    xx = x.mul(x).round(DECIMAL_PLACES);
+    yy = y.mul(y).round(DECIMAL_PLACES);
+    xy = x.mul(y).round(DECIMAL_PLACES);
   }
   colorizer(maxIter, iter - 1, buffer, pixel); 
 }
@@ -201,14 +184,14 @@ function withBigFloat32(maxIter, target, buffer, pixel) {
   let xx = new BF(0), xy = new BF(0), yy = new BF(0);
   let tx = new BF(target.x), ty = new BF(target.y);
   let tdx = new BF(target.dx), tdy = new BF(target.dy);
-  let cx = tx.sub(tdx).add(tdx.mul(2 * pixel.i).mul(1/buffer.width)).round(31);
-  let cy = ty.add(tdy).sub(tdy.mul(2 * pixel.j).mul(1/buffer.height)).round(31);
+  let cx = tx.sub(tdx).add(tdx.mul(2 * pixel.i).mul(1/buffer.width)).round(DECIMAL_PLACES);
+  let cy = ty.add(tdy).sub(tdy.mul(2 * pixel.j).mul(1/buffer.height)).round(DECIMAL_PLACES);
   while (iter++ < maxIter && xx.add(yy).toString() < 4) {
     x = xx.sub(yy).add(cx);
     y = xy.add(xy).add(cy);
-    xx = x.mul(x).round(31);
-    yy = y.mul(y).round(31);
-    xy = x.mul(y).round(31);
+    xx = x.mul(x).round(DECIMAL_PLACES);
+    yy = y.mul(y).round(DECIMAL_PLACES);
+    xy = x.mul(y).round(DECIMAL_PLACES);
   }
   colorizer(maxIter, iter - 1, buffer, pixel);
 }
