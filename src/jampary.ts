@@ -1,19 +1,19 @@
-// type float = number;
-// type int = number;
-// let max = Math.max;
-// let sqrt = Math.sqrt;
+type float = number;
+type int = number;
+let max = Math.max;
+let sqrt = Math.sqrt;
 
-type float = f64;
-type int = i32;
+// type float = f64;
+// type int = i32;
 
-export type Vec = StaticArray<float>;
+export type Vec = Array<float>;
 const splitter = 134217729.; // = 2^27+1 for 64-bit float
 let EE: float; // global variable for storing temp error
 
 /* === Basic EFT bricks === */
 
 // Algorithm 3.2
-@inline
+//@inline
 function quickSum(a: float, b: float): float {
   let s = a + b;
   EE = b - (s - a);
@@ -21,7 +21,7 @@ function quickSum(a: float, b: float): float {
 }
 
 // Algorithm 3.1
-@inline
+//@inline
 function twoSum(a: float, b: float): float {
   let s = a + b;
   let t  = s - b;
@@ -30,7 +30,7 @@ function twoSum(a: float, b: float): float {
 }
 
 // Algorithm 3.3 with inlined 3.2
-@inline
+//@inline
 function twoProd(a: float, b: float): float {
   let t = splitter * a;
   let ah = t + (a - t), al = a - ah;
@@ -44,10 +44,10 @@ function twoProd(a: float, b: float): float {
 /* === Vectorized helpers === */
 
 // Merge two descending sorted arrs of floats into one sorted arr
-@inline
+//@inline
 function vecMerge(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
   let len = Ar - Al + Br - Bl;
-  let R = new StaticArray<float>(len);
+  let R = new Array<float>(len);
   let i = Al, j = Bl, k = 0;
   while (k < len) {
     if (i < Ar && j < Br) {
@@ -60,10 +60,10 @@ function vecMerge(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
 }
 
 // Merge and negate
-@inline
+//@inline
 function vecMergeNeg(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
   let len = Ar - Al + Br - Bl;
-  let R = new StaticArray<float>(len);
+  let R = new Array<float>(len);
   let i = Al, j = Bl, k = 0;
   while (k < len) {
     if (i < Ar && j < Br) {
@@ -76,9 +76,9 @@ function vecMergeNeg(A: Vec, Al: int, Ar: int, B: Vec, Bl: int, Br: int): Vec {
 }
 
 // Algorithm 3
-@inline
+//@inline
 function vecSum(A: Vec): Vec {
-  let E = new StaticArray<float>(A.length);
+  let E = new Array<float>(A.length);
   let s = A[A.length - 1];
   for (let i = A.length - 2; i >= 0; --i) {
     s = quickSum(A[i], s);
@@ -91,7 +91,7 @@ function vecSum(A: Vec): Vec {
 // Algorithm 6
 function renormalize(A: Vec, outSize: int): Vec {
   let E = vecSum(A);
-  let F = (outSize == E.length) ? E : new StaticArray<float>(outSize);
+  let F = (outSize == E.length) ? E : new Array<float>(outSize);
 
   //Algorithm 7
   let e = E[0], j = 0;
@@ -105,6 +105,7 @@ function renormalize(A: Vec, outSize: int): Vec {
     }
   }
   if (e != 0. && j < outSize) F[j] = e;
+  for (let i = j + 1; i < outSize; ++i) F[i] = 0.;//js-only
 
   for (let i = 0; i < outSize - 1; ++i) {
     //Algorithm 8
@@ -136,22 +137,22 @@ export function sub(A: Vec, B: Vec): Vec {
 // 2do: revisit memory consumtion
 export function mul(A: Vec, B: Vec): Vec {
   let n = A.length, m = B.length, d = max(n, m);
-  let R = new StaticArray<float>(d + 1);
-  let P = new StaticArray<float>(d);
-  let E = new StaticArray<float>(d * d);
-  let E2 = new StaticArray<float>(d);
-  let S: StaticArray<float>;
+  let R = new Array<float>(d + 1);
+  let P = new Array<float>(d);
+  let E = new Array<float>(d * d);
+  let E2 = new Array<float>(d);
+  let S: Array<float>;
   if (n < d) {
     let T = A;
-    A = new StaticArray<float>(d);
+    A = new Array<float>(d);
     for (let i = 0; i < n; ++i) A[i] = T[i];
-    //for (let i = n; i < d; ++i) A[i] = 0.;
+    for (let i = n; i < d; ++i) A[i] = 0.;//js-only
   }
   if (m < d) {
     let T = B;
-    B = new StaticArray<float>(d);
+    B = new Array<float>(d);
     for (let i = 0; i < m; ++i) B[i] = T[i];
-    //for (let i = m; i < d; ++i) B[i] = 0.;
+    for (let i = m; i < d; ++i) B[i] = 0.;//js-only
   }
   R[0] = twoProd(A[0], B[0]);
   E[0] = EE;
@@ -161,7 +162,7 @@ export function mul(A: Vec, B: Vec): Vec {
       P[i] = twoProd(A[i], B[n - i]);
       E2[i] = EE;
     }
-    S = vecSum(vecMerge(P, 0, n + 1, E, 0, n * n));//opt:vecMerge?
+    S = vecSum(vecMerge(P, 0, n + 1, E, 0, n * n));
     R[n] = S[0];
     E = vecMerge(S, 1, n * n + n + 1, E2, 0, n + 1);
   }
@@ -173,17 +174,17 @@ export function mul(A: Vec, B: Vec): Vec {
 // Algorithm 9 (rounded)
 export function div(A: Vec, B: Vec): Vec {
   let n = A.length, m = B.length, d = max(n, m);
-  let T: StaticArray<float>;
-  let R = new StaticArray<float>(d);
-  let Q = new StaticArray<float>(d);
+  let T: Array<float>;
+  let R = new Array<float>(d);
+  let Q = new Array<float>(d);
   for (let i = 0; i < n; ++i) R[i] = A[i];
-  //for (let i = n; i < d; ++i) R[i] = 0.;
-  //for (let i = m; i < d; ++i) B[i] = 0.;
+  for (let i = n; i < d; ++i) R[i] = 0.;//js-only
+  for (let i = m; i < d; ++i) B[i] = 0.;//js-only
   if (m < d) {
     T = B;
-    B = new StaticArray<float>(d);
+    B = new Array<float>(d);
     for (let i = 0; i < m; ++i) B[i] = T[i];
-    //for (let i = m; i < d; ++i) B[i] = 0.;
+    for (let i = m; i < d; ++i) B[i] = 0.;//js-only
   }
   Q[0] = A[0] / B[0];
   for (let i = 1; i < d; ++i) {
@@ -194,38 +195,38 @@ export function div(A: Vec, B: Vec): Vec {
   return renormalize(Q, d);
 }
 
-// Algorithm 10 (not tested)
-export function div10(A: Vec, B: Vec): Vec {
-  let n = A.length, m = B.length, d = max(n, m);
-  //for (let i = n; i < d; ++i) A[i] = 0.;
-  //for (let i = m; i < d; ++i) B[i] = 0.;
-  let X: StaticArray<float> = [1. / B[0]];
-  for (let i = 0; i < 4; ++i) {
-    X = mul(X, sub([4.], mul(X, B)));
-  }
-  return mul(A, X);
-}
+// // Algorithm 10 (not tested)
+// export function div10(A: Vec, B: Vec): Vec {
+//   let n = A.length, m = B.length, d = max(n, m);
+//   for (let i = n; i < d; ++i) A[i] = 0.;//js-only
+//   for (let i = m; i < d; ++i) B[i] = 0.;//js-only
+//   let X: Array<float> = [1. / B[0]];
+//   for (let i = 0; i < 4; ++i) {
+//     X = mul(X, sub([4.], mul(X, B)));
+//   }
+//   return mul(A, X);
+// }
 
-// Argorithm 11 (not tested)
-export function rsqrt(A: Vec): Vec {
-  let X: StaticArray<float> = [1. / sqrt(A[0])];
-  for (let i = 0; i < 4; ++i) {
-    X = mul(div(X, [2.]), sub([3.], mul(X, mul(X, A))));
-  }
-  return X;
-}
+// // Argorithm 11 (not tested)
+// export function rsqrt(A: Vec): Vec {
+//   let X: Array<float> = [1. / sqrt(A[0])];
+//   for (let i = 0; i < 4; ++i) {
+//     X = mul(div(X, [2.]), sub([3.], mul(X, mul(X, A))));
+//   }
+//   return X;
+// }
 
 export function mandelbrot(maxIteration: int, width: float, height: float, i: float, j: float,
     x0: float, y0: float, dx: float, dy: float): int {
   let iteration: int = 0;
-  let x: StaticArray<float> = [0.,0.,0.,0.]; let y: StaticArray<float> = [0.,0.,0.,0.];
-  let xx: StaticArray<float> = [0.,0.,0.,0.]; let xy: StaticArray<float> = [0.,0.,0.,0.]; let yy: StaticArray<float> = [0.,0.,0.,0.];
-  let tx: StaticArray<float> = [x0,0.,0.,0.]; let ty: StaticArray<float> = [y0,0.,0.,0.];
-  let tdx: StaticArray<float> = [dx,0.,0.,0.]; let tdy: StaticArray<float> = [dy,0.,0.,0.];
-  let I: StaticArray<float> = [2.*i,0.,0.,0.]; let J: StaticArray<float> = [2.*j,0.,0.,0.];
-  let W: StaticArray<float> = [width,0.,0.,0.]; let H: StaticArray<float> = [height,0.,0.,0.];
-  let cx: StaticArray<float> = add(sub(tx, tdx), div(mul(tdx, I), W));
-  let cy: StaticArray<float> = sub(add(ty, tdy), div(mul(tdy, J), H));
+  let x: Array<float> = [0.,0.,0.,0.]; let y: Array<float> = [0.,0.,0.,0.];
+  let xx: Array<float> = [0.,0.,0.,0.]; let xy: Array<float> = [0.,0.,0.,0.]; let yy: Array<float> = [0.,0.,0.,0.];
+  let tx: Array<float> = [x0,0.,0.,0.]; let ty: Array<float> = [y0,0.,0.,0.];
+  let tdx: Array<float> = [dx,0.,0.,0.]; let tdy: Array<float> = [dy,0.,0.,0.];
+  let I: Array<float> = [2.*i,0.,0.,0.]; let J: Array<float> = [2.*j,0.,0.,0.];
+  let W: Array<float> = [width,0.,0.,0.]; let H: Array<float> = [height,0.,0.,0.];
+  let cx: Array<float> = add(sub(tx, tdx), div(mul(tdx, I), W));
+  let cy: Array<float> = sub(add(ty, tdy), div(mul(tdy, J), H));
   while (iteration++ < maxIteration && add(xx, yy)[0] < 4.) {
     x = add(sub(xx, yy), cx);
     y = add(add(xy, xy), cy);

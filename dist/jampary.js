@@ -2,7 +2,6 @@ var Jampary = (function (exports) {
   'use strict';
 
   let max = Math.max;
-  let sqrt = Math.sqrt;
   const splitter = 134217729.;
   let EE;
   function quickSum(a, b) {
@@ -59,7 +58,7 @@ var Jampary = (function (exports) {
   }
   function renormalize(A, outSize) {
       let E = vecSum(A);
-      let F = (outSize == E.length) ? E : new Array(outSize).fill(0);
+      let F = (outSize == E.length) ? E : new Array(outSize);
       let e = E[0], j = 0;
       for (let i = 1; i < E.length && j < outSize; ++i) {
           F[j] = quickSum(e, E[i]);
@@ -73,6 +72,8 @@ var Jampary = (function (exports) {
       }
       if (e != 0. && j < outSize)
           F[j] = e;
+      for (let i = j + 1; i < outSize; ++i)
+          F[i] = 0.;
       for (let i = 0; i < outSize - 1; ++i) {
           e = F[i];
           for (let j = i; j < outSize - 1; ++j) {
@@ -159,25 +160,6 @@ var Jampary = (function (exports) {
       }
       return renormalize(Q, d);
   }
-  function div10(A, B) {
-      let n = A.length, m = B.length, d = max(n, m);
-      for (let i = n; i < d; ++i)
-          A[i] = 0.;
-      for (let i = m; i < d; ++i)
-          B[i] = 0.;
-      let X = [1. / B[0]];
-      for (let i = 0; i < 4; ++i) {
-          X = mul(X, sub([4.], mul(X, B)));
-      }
-      return mul(A, X);
-  }
-  function rsqrt(A) {
-      let X = [1. / sqrt(A[0])];
-      for (let i = 0; i < 4; ++i) {
-          X = mul(div(X, [2.]), sub([3.], mul(X, mul(X, A))));
-      }
-      return X;
-  }
   function mandelbrot(maxIteration, width, height, i, j, x0, y0, dx, dy) {
       let iteration = 0;
       let x = [0., 0., 0., 0.];
@@ -207,10 +189,8 @@ var Jampary = (function (exports) {
 
   exports.add = add;
   exports.div = div;
-  exports.div10 = div10;
   exports.mandelbrot = mandelbrot;
   exports.mul = mul;
-  exports.rsqrt = rsqrt;
   exports.sub = sub;
 
   return exports;

@@ -1,5 +1,4 @@
 let max = Math.max;
-let sqrt = Math.sqrt;
 const splitter = 134217729.;
 let EE;
 function quickSum(a, b) {
@@ -70,6 +69,8 @@ function renormalize(A, outSize) {
     }
     if (e != 0. && j < outSize)
         F[j] = e;
+    for (let i = j + 1; i < outSize; ++i)
+        F[i] = 0.;
     for (let i = 0; i < outSize - 1; ++i) {
         e = F[i];
         for (let j = i; j < outSize - 1; ++j) {
@@ -156,25 +157,6 @@ function div(A, B) {
     }
     return renormalize(Q, d);
 }
-function div10(A, B) {
-    let n = A.length, m = B.length, d = max(n, m);
-    for (let i = n; i < d; ++i)
-        A[i] = 0.;
-    for (let i = m; i < d; ++i)
-        B[i] = 0.;
-    let X = [1. / B[0]];
-    for (let i = 0; i < 4; ++i) {
-        X = mul(X, sub([4.], mul(X, B)));
-    }
-    return mul(A, X);
-}
-function rsqrt(A) {
-    let X = [1. / sqrt(A[0])];
-    for (let i = 0; i < 4; ++i) {
-        X = mul(div(X, [2.]), sub([3.], mul(X, mul(X, A))));
-    }
-    return X;
-}
 function mandelbrot(maxIteration, width, height, i, j, x0, y0, dx, dy) {
     let iteration = 0;
     let x = [0., 0., 0., 0.];
@@ -202,4 +184,4 @@ function mandelbrot(maxIteration, width, height, i, j, x0, y0, dx, dy) {
     return iteration;
 }
 
-export { add, div, div10, mandelbrot, mul, rsqrt, sub };
+export { add, div, mandelbrot, mul, sub };
