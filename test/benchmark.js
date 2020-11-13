@@ -27,10 +27,10 @@ window.onload = function() {
   }
 
   // test wasm
-  loadWasm('/test/test.wasm', () => {}, w => console.log('wasm test =', w.test()));
+  loadWasm('../test/test.wasm', () => {}, w => console.log('wasm test =', w.test()));
 
   // load wasm
-  loadWasm('/dist/jampary.wasm',
+  loadWasm('../dist/jampary.wasm',
     () => { WASM = { mandelbrot: () => 1 }; console.log('wasm not supported!'); },
     (wasm) => {
       WASM = wasm;
