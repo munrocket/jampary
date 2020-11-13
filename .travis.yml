@@ -1,0 +1,21 @@
+
+language: node_js
+node_js: node
+
+jobs:
+  include:
+    - name: test
+      script: npm run test
+
+    - name: publish
+      script: npm run build
+      deploy:
+        provider: npm
+        edge: true
+        email: $NPM_EMAIL
+        api_key: $NPM_TOKEN
+        on:
+          branch: master
+
+  allow_failures:
+    - name: publish
