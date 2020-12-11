@@ -4,7 +4,7 @@ Modern arbitrary-precision arithmetic library using floating-point expansions.
 
 ### Early stage results without wasm and FMA
 ![](https://habrastorage.org/webt/ky/ag/px/kyagpxlqqxcezuszpfn6qna83rc.png)
-[online benchmark](https://munrocket.github.io/jampary/test/benchmark.html)
+[online benchmark](https://munsocket.github.io/jampary/test/benchmark.html)
 
 ### 2do
 - [x] mvp
