@@ -61,10 +61,10 @@ window.onload = function() {
         document.getElementById('title').innerHTML = 'Drawing split test...';
 
         // draw split test
-        // setTimeout(() => {
-        //   drawSplitTest(withJampary, withNumber, maxIter, target);
-        //   document.getElementById('title').innerHTML = 'Split test and benchmark';
-        // }, 10);
+        setTimeout(() => {
+          drawSplitTest(withJampary, withNumber, maxIter, target);
+          document.getElementById('title').innerHTML = 'Split test and benchmark';
+        }, 10);
 
       }, 10);
     });
