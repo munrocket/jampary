@@ -149,7 +149,7 @@ function withBigNumberJs(maxIter, target, buffer, pixel) {
   let tdx = new BN(target.dx), tdy = new BN(target.dy);
   let cx = tx.minus(tdx).plus(tdx.times(2 * pixel.i).div(buffer.width)).dp(DECIMAL_PLACES);
   let cy = ty.plus(tdy).minus(tdy.times(2 * pixel.j).div(buffer.height)).dp(DECIMAL_PLACES);
-  while (iter++ < maxIter && xx.plus(yy).toString() < 4) {
+  while (iter++ < maxIter && xx.plus(yy).lt(4)) {
     x = xx.minus(yy).plus(cx);
     y = xy.plus(xy).plus(cy);
     xx = x.times(x).dp(DECIMAL_PLACES);
