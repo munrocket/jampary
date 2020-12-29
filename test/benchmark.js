@@ -90,7 +90,7 @@ function withJampary_Wasm(maxIter, target, buffer, pixel) {
 
 function withJampary(maxIter, target, buffer, pixel) {
   let J = Jampary
-  let iter = 0; 
+  let iter = 0;
   let x = [0,0,0,0], y = [0,0,0,0];
   let xx = [0,0,0,0], xy = [0,0,0,0], yy = [0,0,0,0];
   let tx = [target.x,0,0,0], ty = [target.y,0,0,0];
@@ -104,7 +104,7 @@ function withJampary(maxIter, target, buffer, pixel) {
     yy = J.mul(y, y);
     xy = J.mul(x, y);
   }
-  colorizer(maxIter, iter - 1, buffer, pixel); 
+  colorizer(maxIter, iter - 1, buffer, pixel);
 }
 
 function withNumber(maxIter, target, buffer, pixel) {
@@ -157,7 +157,7 @@ function withBigNumberJs(maxIter, target, buffer, pixel) {
     yy = y.times(y).dp(DECIMAL_PLACES);
     xy = x.times(y).dp(DECIMAL_PLACES);
   }
-  colorizer(maxIter, iter - 1, buffer, pixel); 
+  colorizer(maxIter, iter - 1, buffer, pixel);
 }
 
 function withBigJs(maxIter, target, buffer, pixel) {
@@ -175,7 +175,7 @@ function withBigJs(maxIter, target, buffer, pixel) {
     yy = y.mul(y).round(DECIMAL_PLACES);
     xy = x.mul(y).round(DECIMAL_PLACES);
   }
-  colorizer(maxIter, iter - 1, buffer, pixel); 
+  colorizer(maxIter, iter - 1, buffer, pixel);
 }
 
 function withBigFloat32(maxIter, target, buffer, pixel) {

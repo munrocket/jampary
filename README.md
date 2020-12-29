@@ -2,8 +2,16 @@
 
 Modern arbitrary-precision arithmetic library using floating-point expansions.
 
-### Early stage results without wasm and FMA
-![](https://habrastorage.org/webt/ky/ag/px/kyagpxlqqxcezuszpfn6qna83rc.png)
+
+### Disclamer
+It's not finished yet and shows early stage results without FMA
+
+### Benchmark in Chrome 67+
+<img src="https://habrastorage.org/webt/gm/qw/wt/gmqwwtndqksaouy1e_fbfr61bvi.png" width="400"/>
+
+### Benchmark in Safari 14+
+<img src="https://habrastorage.org/webt/ec/s2/go/ecs2gosll_alaw_8xsooaerbm80.png" width="400"/>
+
 [online benchmark](https://munsocket.github.io/jampary/test/benchmark.html)
 
 ### 2do
