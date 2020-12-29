@@ -1,3 +1,4 @@
+import {BigFloat} from 'https://unpkg.com/@yaffle/bigdecimal';
 /* initialization */
 
 let WASM;
@@ -42,7 +43,7 @@ window.onload = function() {
         popups[0].style.display = 'block';
         let now = () => (typeof performance != 'undefined') ? performance.now() : Date.now();
         let calculators = [ withJampary_Wasm,
-          withJampary, withBigNumberJs, withDecimalJs, withBigJs, withBigFloat32
+          withJampary, withBigNumberJs, withDecimalJs, withBigJs, withBigFloat32, withYaffleBigDecimal
         ]
         calculators.forEach(calculator => {
           let start = now();
@@ -196,11 +197,30 @@ function withBigFloat32(maxIter, target, buffer, pixel) {
   colorizer(maxIter, iter - 1, buffer, pixel);
 }
 
+function withYaffleBigDecimal(maxIter, target, buffer, pixel) {
+  const rounding = {maximumFractionDigits: Math.ceil(DECIMAL_PLACES * Math.log2(10) * 2), roundingMode: 'floor'};
+  let iter = 0;
+  let x = BigFloat.BigFloat(0), y = BigFloat.BigFloat(0);
+  let xx = BigFloat.BigFloat(0), xy = BigFloat.BigFloat(0), yy = BigFloat.BigFloat(0);
+  let tx = BigFloat.BigFloat(target.x), ty = BigFloat.BigFloat(target.y);
+  let tdx = BigFloat.BigFloat(target.dx), tdy = BigFloat.BigFloat(target.dy);
+  let cx = BigFloat.add(BigFloat.subtract(tx, tdx), BigFloat.divide(BigFloat.multiply(tdx, BigFloat.BigFloat(2 * pixel.i)), BigFloat.BigFloat(buffer.width), rounding));
+  let cy = BigFloat.subtract(BigFloat.add(ty, tdy), BigFloat.divide(BigFloat.multiply(tdy, BigFloat.BigFloat(2 * pixel.j)), BigFloat.BigFloat(buffer.height), rounding));
+  while (iter++ < maxIter && BigFloat.lessThan(BigFloat.add(xx, yy), BigFloat.BigFloat(4))) {
+    x = BigFloat.add(BigFloat.subtract(xx, yy), cx);
+    y = BigFloat.add(BigFloat.add(xy, xy), cy);
+    xx = BigFloat.multiply(x, x, rounding);
+    yy = BigFloat.multiply(y, y, rounding);
+    xy = BigFloat.multiply(x, y, rounding);
+  }
+  colorizer(maxIter, iter - 1, buffer, pixel);
+}
+
 
 /* mandelbrot drawing */
 
 function colorizer(maxIter, iter, buffer, pixel) {
-  color = (iter == maxIter) ? 0 : 256 * (maxIter - (iter * 25) % maxIter) / maxIter;
+  const color = (iter == maxIter) ? 0 : 256 * (maxIter - (iter * 25) % maxIter) / maxIter;
   buffer.data[pixel.id++] = color;
   buffer.data[pixel.id++] = color;
   buffer.data[pixel.id++] = color;
