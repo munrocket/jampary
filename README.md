@@ -1,10 +1,10 @@
 ## JAMPARY: JAvascript Multiple Precision Arithmetic libraRY
 
-Modern arbitrary-precision arithmetic library using floating-point expansions.
+(Modern arbitrary-precision arithmetic library using floating-point expansions.)
 
 
 ### Disclamer
-It's not finished yet and shows early stage results without FMA
+It's not finished and shows early stage results without FMA
 
 ### Benchmark in Chrome 67+
 <img src="https://habrastorage.org/webt/gm/qw/wt/gmqwwtndqksaouy1e_fbfr61bvi.png" width="400"/>
@@ -12,13 +12,16 @@ It's not finished yet and shows early stage results without FMA
 ### Benchmark in Safari 14+
 <img src="https://habrastorage.org/webt/ec/s2/go/ecs2gosll_alaw_8xsooaerbm80.png" width="400"/>
 
-[online benchmark](https://munsocket.github.io/jampary/test/benchmark.html)
+[online benchmark](https://munrocket.github.io/jampary/test/benchmark.html)
 
 ### 2do
 - [x] mvp
 - [x] mandel test
 - [x] fix mul/div
 - [ ] optimization
+
+### Consider BigDecimal based on BigInt, it's very good
+https://github.com/Yaffle/BigDecimal
 
 ### References
 1. Mioara Joldes, Olivier Marty, Jean-Michel Muller, Valentina Popescu,
